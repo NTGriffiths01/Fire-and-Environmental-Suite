@@ -531,6 +531,9 @@ backend:
       - working: false
         agent: "testing"
         comment: "❌ MINOR ISSUE: Document statistics endpoint returns 404 error. Endpoint structure implemented but may have routing or service initialization issue. Core document management functionality working, statistics calculation needs debugging."
+      - working: false
+        agent: "testing"
+        comment: "❌ STILL FAILING: Document statistics endpoint still returns 404 'Document not found' error. GET /api/compliance/documents/statistics endpoint implemented correctly in compliance_api.py but returning wrong error message. Issue appears to be in DocumentManagementService.get_document_statistics() method or database query."
 
   - task: "Phase 4: Facility Documents"
     implemented: true
