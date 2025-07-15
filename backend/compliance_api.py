@@ -110,6 +110,25 @@ class ComplianceStatisticsResponse(BaseModel):
     completion_rate: float
     overdue_records: int
 
+# Phase 4: Document Management Models
+class DocumentUploadResponse(BaseModel):
+    success: bool
+    errors: List[str]
+    document: Optional[Dict[str, Any]] = None
+
+class DocumentStatisticsResponse(BaseModel):
+    total_documents: int
+    total_size: int
+    average_size: float
+    type_breakdown: Dict[str, Dict[str, int]]
+    category_breakdown: Dict[str, Dict[str, int]]
+
+class BulkUploadResponse(BaseModel):
+    total_uploads: int
+    success_count: int
+    error_count: int
+    results: List[Dict[str, Any]]
+
 # Helper functions
 def facility_to_dict(facility: ComplianceFacility) -> Dict[str, Any]:
     return {
