@@ -1168,6 +1168,7 @@ const MainApp = () => {
       case 'inspections': return 'All Inspections';
       case 'new-inspection': return 'New Inspection';
       case 'my-inspections': return 'My Inspections';
+      case 'dynamic-forms': return 'Dynamic Inspection Forms';
       case 'templates': return 'Inspection Templates';
       case 'users': return 'User Management';
       case 'audit': return 'Audit Logs';
@@ -1183,6 +1184,7 @@ const MainApp = () => {
       case 'inspections': return 'View and manage all inspections';
       case 'new-inspection': return 'Create a new fire safety inspection';
       case 'my-inspections': return 'View your inspection history';
+      case 'dynamic-forms': return 'Create inspections using dynamic JSON schema forms';
       case 'templates': return 'Manage inspection form templates';
       case 'users': return 'Manage system users and permissions';
       case 'audit': return 'View system audit logs';
