@@ -1,7 +1,6 @@
-from sqlalchemy import create_engine, Column, String, DateTime, Boolean, Text, Date, BigInteger, ForeignKey, Enum, JSON
+from sqlalchemy import create_engine, Column, String, DateTime, Boolean, Text, Date, Integer, ForeignKey, JSON
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
 import uuid
 import os
@@ -33,10 +32,10 @@ class StatusEnum(str, enum.Enum):
 class User(Base):
     __tablename__ = "users"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     username = Column(String(120), nullable=False, unique=True)
-    role = Column(Enum(RoleEnum), nullable=False)
-    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    role = Column(String(50), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
     
     # Relationships
     templates = relationship("Template", back_populates="creator")
@@ -46,11 +45,11 @@ class User(Base):
 class Template(Base):
     __tablename__ = "templates"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     name = Column(String(255), nullable=False)
     schema = Column(JSON, nullable=False)
-    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"))
-    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+    created_by = Column(String(36), ForeignKey("users.id"))
+    created_at = Column(DateTime, default=datetime.utcnow)
     
     # Relationships
     creator = relationship("User", back_populates="templates")
@@ -59,15 +58,15 @@ class Template(Base):
 class Inspection(Base):
     __tablename__ = "inspections"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    template_id = Column(UUID(as_uuid=True), ForeignKey("templates.id"))
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    template_id = Column(String(36), ForeignKey("templates.id"))
     facility = Column(String(120), nullable=False)
     payload = Column(JSON, nullable=False)
-    status = Column(Enum(StatusEnum), default=StatusEnum.draft)
-    inspector_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
-    deputy_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
-    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
-    updated_at = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+    status = Column(String(50), default="draft")
+    inspector_id = Column(String(36), ForeignKey("users.id"))
+    deputy_id = Column(String(36), ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
     template = relationship("Template", back_populates="inspections")
@@ -78,13 +77,13 @@ class Inspection(Base):
 class CorrectiveAction(Base):
     __tablename__ = "corrective_actions"
     
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    inspection_id = Column(UUID(as_uuid=True), ForeignKey("inspections.id", ondelete="CASCADE"))
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    inspection_id = Column(String(36), ForeignKey("inspections.id"))
     violation_ref = Column(String(255))
     action_plan = Column(Text)
     due_date = Column(Date)
     completed = Column(Boolean, default=False)
-    completed_at = Column(DateTime(timezone=True))
+    completed_at = Column(DateTime)
     
     # Relationships
     inspection = relationship("Inspection", back_populates="corrective_actions")
@@ -92,11 +91,11 @@ class CorrectiveAction(Base):
 class AuditLog(Base):
     __tablename__ = "audit_logs"
     
-    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String(120))
     action = Column(String(255))
     ip_addr = Column(String(45))
-    timestamp = Column(DateTime(timezone=True), default=datetime.utcnow)
+    timestamp = Column(DateTime, default=datetime.utcnow)
 
 # Database session dependency
 def get_db():
