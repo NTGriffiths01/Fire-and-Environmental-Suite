@@ -356,6 +356,7 @@ class BackendTester:
             inspection_data = {
                 "template_id": self.template_id,
                 "facility_id": self.facility_id,
+                "inspector_id": "dummy",  # Will be overridden by the API
                 "inspection_date": datetime.now().isoformat(),
                 "form_data": {
                     "alarm_functional": True,
