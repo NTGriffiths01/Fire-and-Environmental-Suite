@@ -401,8 +401,7 @@ metadata:
 test_plan:
   current_focus:
     - "Dynamic Inspection Form Component"
-  stuck_tasks:
-    - "Dynamic Inspection Form Component"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
