@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from compliance_models import ComplianceRecord, ComplianceSchedule, ComplianceFacility, ComplianceFunction
 from typing import List, Dict, Any, Optional
 import uuid
+import json
 from datetime import datetime, date, timedelta
 import smtplib
 from email.mime.text import MIMEText
