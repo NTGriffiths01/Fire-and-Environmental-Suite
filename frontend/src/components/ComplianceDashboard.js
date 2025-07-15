@@ -181,6 +181,30 @@ export default function ComplianceDashboard() {
     }
   };
 
+  const handleCellClick = (schedule, month, status) => {
+    // Generate a pseudo record ID for the cell
+    const recordId = `${schedule.schedule_id}-${selectedYear}-${month}`;
+    setSelectedRecord({
+      id: recordId,
+      schedule_id: schedule.schedule_id,
+      function_name: schedule.function_name,
+      facility_name: processedDashboardData?.facility_name,
+      month: month,
+      year: selectedYear,
+      status: status,
+      assigned_to: schedule.assigned_to
+    });
+  };
+
+  const closeModal = () => {
+    setActiveModal(null);
+    setSelectedRecord(null);
+  };
+
+  const openModal = (type) => {
+    setActiveModal(type);
+  };
+
   // Process dashboard data to only show status for scheduled months
   const processedDashboardData = dashboardData ? {
     ...dashboardData,
