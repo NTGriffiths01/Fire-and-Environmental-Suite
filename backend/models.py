@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Database setup
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://localhost/fire_safety_suite")
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./fire_safety_suite.db")
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
