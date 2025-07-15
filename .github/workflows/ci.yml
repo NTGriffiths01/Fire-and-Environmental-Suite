@@ -1,0 +1,50 @@
+name: Fire‑Safety‑Suite CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    env:
+      PYTHON_VERSION: "3.11"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install backend deps
+        run: |
+          pip install -r backend/requirements.txt pytest bandit
+      - name: Security lint
+        run: bandit -r backend -ll
+      - name: Run tests
+        run: pytest -q backend/tests
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install frontend deps
+        run: |
+          cd frontend && npm ci
+      - name: Frontend lint & tests
+        run: |
+          cd frontend
+          npm run lint
+          npm run test -- --watchAll=false
+
+      - name: TFLint
+        uses: terraform-linters/tflint-action@v2
+        with:
+          working_directory: infrastructure
