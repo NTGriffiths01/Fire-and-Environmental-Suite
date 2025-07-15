@@ -361,7 +361,10 @@ export default function ComplianceDashboard() {
               {processedDashboardData.facility_name} - {processedDashboardData.year}
             </h3>
             <p className="text-sm text-gray-600">
-              Click on rows to expand details • Icons: ✅ Completed, ❌ Overdue, ⏳ Pending, ⬆️ Documents Uploaded
+              Click on rows to expand details • Click on status cells for advanced actions
+            </p>
+            <p className="text-sm text-gray-600">
+              Icons: ✅ Completed, ❌ Overdue, ⏳ Pending, ⬆️ Documents Uploaded
             </p>
             <p className="text-xs text-gray-500 mt-1">
               Status indicators only appear for months when tasks are due based on their frequency
