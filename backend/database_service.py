@@ -15,9 +15,9 @@ class DatabaseService:
     def create_user(self, username: str, role: str, password: str = None) -> User:
         """Create a new user"""
         user = User(
-            id=uuid.uuid4(),
+            id=str(uuid.uuid4()),
             username=username,
-            role=RoleEnum(role)
+            role=role
         )
         self.db.add(user)
         self.db.commit()
@@ -40,7 +40,7 @@ class DatabaseService:
     def create_template(self, name: str, schema: Dict[str, Any], created_by: str) -> Template:
         """Create a new template"""
         template = Template(
-            id=uuid.uuid4(),
+            id=str(uuid.uuid4()),
             name=name,
             schema=schema,
             created_by=created_by
@@ -62,12 +62,12 @@ class DatabaseService:
     def create_inspection(self, template_id: str, facility: str, payload: Dict[str, Any], inspector_id: str) -> Inspection:
         """Create a new inspection"""
         inspection = Inspection(
-            id=uuid.uuid4(),
+            id=str(uuid.uuid4()),
             template_id=template_id,
             facility=facility,
             payload=payload,
             inspector_id=inspector_id,
-            status=StatusEnum.draft
+            status="draft"
         )
         self.db.add(inspection)
         self.db.commit()
@@ -90,7 +90,7 @@ class DatabaseService:
         """Update inspection status"""
         inspection = self.db.query(Inspection).filter(Inspection.id == inspection_id).first()
         if inspection:
-            inspection.status = StatusEnum(status)
+            inspection.status = status
             if deputy_id:
                 inspection.deputy_id = deputy_id
             inspection.updated_at = datetime.utcnow()
@@ -112,7 +112,7 @@ class DatabaseService:
     def create_corrective_action(self, inspection_id: str, violation_ref: str, action_plan: str, due_date: date) -> CorrectiveAction:
         """Create a corrective action"""
         action = CorrectiveAction(
-            id=uuid.uuid4(),
+            id=str(uuid.uuid4()),
             inspection_id=inspection_id,
             violation_ref=violation_ref,
             action_plan=action_plan,
@@ -160,7 +160,7 @@ class DatabaseService:
         total_users = self.db.query(User).count()
         total_templates = self.db.query(Template).count()
         total_inspections = self.db.query(Inspection).count()
-        pending_reviews = self.db.query(Inspection).filter(Inspection.status == StatusEnum.submitted).count()
+        pending_reviews = self.db.query(Inspection).filter(Inspection.status == "submitted").count()
         
         return {
             "total_users": total_users,
@@ -175,9 +175,9 @@ class DatabaseService:
         
         return {
             "my_inspections": inspections.count(),
-            "draft_inspections": inspections.filter(Inspection.status == StatusEnum.draft).count(),
-            "submitted_inspections": inspections.filter(Inspection.status == StatusEnum.submitted).count(),
-            "completed_inspections": inspections.filter(Inspection.status == StatusEnum.completed).count()
+            "draft_inspections": inspections.filter(Inspection.status == "draft").count(),
+            "submitted_inspections": inspections.filter(Inspection.status == "submitted").count(),
+            "completed_inspections": inspections.filter(Inspection.status == "completed").count()
         }
     
     def get_deputy_statistics(self) -> Dict[str, Any]:
@@ -185,7 +185,7 @@ class DatabaseService:
         inspections = self.db.query(Inspection)
         
         return {
-            "pending_reviews": inspections.filter(Inspection.status == StatusEnum.submitted).count(),
-            "completed_inspections": inspections.filter(Inspection.status == StatusEnum.completed).count(),
+            "pending_reviews": inspections.filter(Inspection.status == "submitted").count(),
+            "completed_inspections": inspections.filter(Inspection.status == "completed").count(),
             "total_inspections": inspections.count()
         }
