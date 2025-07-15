@@ -445,8 +445,12 @@ export default function ComplianceDashboard() {
                               return (
                                 <div
                                   key={monthNum}
-                                  className={`h-8 w-8 rounded border-2 flex items-center justify-center text-xs font-medium cursor-pointer ${getStatusColor(monthStatus.status)}`}
+                                  className={`h-8 w-8 rounded border-2 flex items-center justify-center text-xs font-medium cursor-pointer hover:shadow-md transition-shadow ${getStatusColor(monthStatus.status)}`}
                                   title={`${MONTH_NAMES[monthNum - 1]} ${processedDashboardData.year}: ${monthStatus.status}`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleCellClick(schedule, monthNum, monthStatus);
+                                  }}
                                 >
                                   {getStatusIcon(monthStatus.status, monthStatus.has_documents)}
                                 </div>
