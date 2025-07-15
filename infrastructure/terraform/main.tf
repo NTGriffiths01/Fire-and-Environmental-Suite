@@ -202,15 +202,26 @@ resource "aws_security_group" "rds" {
   }
 }
 
-# S3 Bucket for File Storage with 7-year retention
-resource "aws_s3_bucket" "files" {
-  bucket = "${var.project_name}-files-${var.environment}"
-
+locals {
   tags = {
-    Name        = "${var.project_name}-files"
-    Environment = var.environment
-    Purpose     = "inspection-files"
+    Project = "MADOC FireSafety"
+    Owner   = "DOC-IT"
   }
+}
+
+# Encrypted object‑lock bucket
+resource "aws_s3_bucket" "uploads" {
+  bucket = "madoc-fire-safety-uploads"
+  acl    = "private"
+  versioning { enabled = true }
+  object_lock_configuration {
+    object_lock_enabled = "Enabled"
+    rule { default_retention { mode = "COMPLIANCE" days = 2555 } }
+  }
+  server_side_encryption_configuration {
+    rule { apply_server_side_encryption_by_default { sse_algorithm = "AES256" } }
+  }
+  tags = local.tags
 }
 
 resource "aws_s3_bucket_versioning" "files" {
