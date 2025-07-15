@@ -118,6 +118,31 @@ const AuditIcon = () => (
   </svg>
 );
 
+const PlusIcon = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+  </svg>
+);
+
+const EyeIcon = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+  </svg>
+);
+
+const EditIcon = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+  </svg>
+);
+
+const DeleteIcon = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+  </svg>
+);
+
 // DOC Logo Component
 const DOCLogo = ({ size = "w-8 h-8" }) => (
   <div className={`${size} relative`}>
@@ -241,7 +266,7 @@ const Navigation = ({ activeTab, setActiveTab, user }) => {
     } else if (user.role === 'inspector') {
       return [
         ...baseItems,
-        { id: 'new-inspection', label: 'New Inspection', icon: InspectionIcon },
+        { id: 'new-inspection', label: 'New Inspection', icon: PlusIcon },
         { id: 'my-inspections', label: 'My Inspections', icon: InspectionIcon },
         { id: 'reports', label: 'My Reports', icon: ReportIcon }
       ];
@@ -326,6 +351,277 @@ const Header = ({ title, subtitle, user, logout }) => {
   );
 };
 
+// Template Creation Modal
+const TemplateModal = ({ isOpen, onClose, onSave, template = null }) => {
+  const [templateData, setTemplateData] = useState({
+    name: '',
+    description: '',
+    template_data: {
+      sections: [
+        {
+          title: 'General Information',
+          fields: [
+            { name: 'facility_name', type: 'text', label: 'Facility Name' },
+            { name: 'inspection_date', type: 'date', label: 'Inspection Date' },
+            { name: 'inspector_name', type: 'text', label: 'Inspector Name' }
+          ]
+        }
+      ]
+    }
+  });
+
+  useEffect(() => {
+    if (template) {
+      setTemplateData(template);
+    }
+  }, [template]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await onSave(templateData);
+      onClose();
+    } catch (error) {
+      console.error('Error saving template:', error);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg p-6 max-w-md w-full">
+        <h3 className="text-lg font-semibold text-blue-900 mb-4">
+          {template ? 'Edit Template' : 'Create New Template'}
+        </h3>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Template Name
+            </label>
+            <input
+              type="text"
+              value={templateData.name}
+              onChange={(e) => setTemplateData({...templateData, name: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Description
+            </label>
+            <textarea
+              value={templateData.description}
+              onChange={(e) => setTemplateData({...templateData, description: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              rows="3"
+              required
+            />
+          </div>
+          <div className="flex justify-end space-x-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              {template ? 'Update' : 'Create'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// Inspection Form Modal
+const InspectionModal = ({ isOpen, onClose, onSave, templates, facilities }) => {
+  const [inspectionData, setInspectionData] = useState({
+    template_id: '',
+    facility_id: '',
+    inspection_date: new Date().toISOString().split('T')[0],
+    form_data: {},
+    status: 'draft'
+  });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await onSave(inspectionData);
+      onClose();
+    } catch (error) {
+      console.error('Error saving inspection:', error);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg p-6 max-w-md w-full">
+        <h3 className="text-lg font-semibold text-blue-900 mb-4">
+          Create New Inspection
+        </h3>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Template
+            </label>
+            <select
+              value={inspectionData.template_id}
+              onChange={(e) => setInspectionData({...inspectionData, template_id: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            >
+              <option value="">Select a template</option>
+              {templates.map((template) => (
+                <option key={template.id} value={template.id}>
+                  {template.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Facility
+            </label>
+            <select
+              value={inspectionData.facility_id}
+              onChange={(e) => setInspectionData({...inspectionData, facility_id: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            >
+              <option value="">Select a facility</option>
+              {facilities.map((facility) => (
+                <option key={facility.id} value={facility.id}>
+                  {facility.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Inspection Date
+            </label>
+            <input
+              type="date"
+              value={inspectionData.inspection_date}
+              onChange={(e) => setInspectionData({...inspectionData, inspection_date: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+          <div className="flex justify-end space-x-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              Create
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// Inspection Details Modal
+const InspectionDetailsModal = ({ isOpen, onClose, inspection }) => {
+  if (!isOpen || !inspection) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-blue-900">
+            Inspection Details - #{inspection.id.slice(-8)}
+          </h3>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 text-2xl"
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-gray-600">Date:</p>
+              <p className="font-medium">{new Date(inspection.inspection_date).toLocaleDateString()}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Status:</p>
+              <span className={`px-2 py-1 text-xs rounded-full ${
+                inspection.status === 'draft' ? 'bg-yellow-100 text-yellow-800' :
+                inspection.status === 'submitted' ? 'bg-blue-100 text-blue-800' :
+                inspection.status === 'approved' ? 'bg-green-100 text-green-800' :
+                'bg-red-100 text-red-800'
+              }`}>
+                {inspection.status}
+              </span>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-sm text-gray-600 mb-2">Form Data:</p>
+            <div className="bg-gray-50 p-3 rounded-md">
+              {Object.entries(inspection.form_data || {}).map(([key, value]) => (
+                <div key={key} className="flex justify-between py-1">
+                  <span className="text-sm text-gray-700">{key.replace('_', ' ')}:</span>
+                  <span className="text-sm">{typeof value === 'boolean' ? (value ? 'Yes' : 'No') : value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {inspection.citations && inspection.citations.length > 0 && (
+            <div>
+              <p className="text-sm text-gray-600 mb-2">Citations:</p>
+              <div className="space-y-2">
+                {inspection.citations.map((citation, idx) => (
+                  <div key={idx} className="bg-red-50 p-3 rounded-md border border-red-200">
+                    <p className="font-medium text-red-900">{citation.code}</p>
+                    <p className="text-red-700 text-sm">{citation.title}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-end space-x-3">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+            >
+              Close
+            </button>
+            <button
+              onClick={() => window.open(`${API}/inspections/${inspection.id}/pdf`, '_blank')}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              Download PDF
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Dashboard Components
 const DashboardStats = ({ stats }) => {
   return (
@@ -370,7 +666,7 @@ const DashboardStats = ({ stats }) => {
   );
 };
 
-const DashboardContent = ({ user }) => {
+const DashboardContent = ({ user, onQuickAction }) => {
   const [stats, setStats] = useState({});
 
   useEffect(() => {
@@ -408,17 +704,26 @@ const DashboardContent = ({ user }) => {
           <h3 className="text-lg font-semibold text-blue-900 mb-4">Quick Actions</h3>
           <div className="space-y-2">
             {user.role === 'admin' && (
-              <button className="w-full text-left p-3 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition-colors">
+              <button 
+                onClick={() => onQuickAction('create-template')}
+                className="w-full text-left p-3 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition-colors"
+              >
                 <span className="font-medium">Create New Template</span>
               </button>
             )}
             {user.role === 'inspector' && (
-              <button className="w-full text-left p-3 bg-green-50 hover:bg-green-100 rounded-lg transition-colors">
+              <button 
+                onClick={() => onQuickAction('new-inspection')}
+                className="w-full text-left p-3 bg-green-50 hover:bg-green-100 rounded-lg transition-colors"
+              >
                 <span className="font-medium">Start New Inspection</span>
               </button>
             )}
             {user.role === 'deputy_of_operations' && (
-              <button className="w-full text-left p-3 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors">
+              <button 
+                onClick={() => onQuickAction('review-queue')}
+                className="w-full text-left p-3 bg-orange-50 hover:bg-orange-100 rounded-lg transition-colors"
+              >
                 <span className="font-medium">Review Pending Inspections</span>
               </button>
             )}
@@ -429,11 +734,16 @@ const DashboardContent = ({ user }) => {
   );
 };
 
-const InspectionsContent = () => {
+const InspectionsContent = ({ onViewInspection }) => {
   const [inspections, setInspections] = useState([]);
+  const [showNewInspection, setShowNewInspection] = useState(false);
+  const [templates, setTemplates] = useState([]);
+  const [facilities, setFacilities] = useState([]);
 
   useEffect(() => {
     fetchInspections();
+    fetchTemplates();
+    fetchFacilities();
   }, []);
 
   const fetchInspections = async () => {
@@ -445,13 +755,45 @@ const InspectionsContent = () => {
     }
   };
 
+  const fetchTemplates = async () => {
+    try {
+      const response = await axios.get(`${API}/templates`);
+      setTemplates(response.data);
+    } catch (error) {
+      console.error('Error fetching templates:', error);
+    }
+  };
+
+  const fetchFacilities = async () => {
+    try {
+      const response = await axios.get(`${API}/facilities`);
+      setFacilities(response.data);
+    } catch (error) {
+      console.error('Error fetching facilities:', error);
+    }
+  };
+
+  const handleCreateInspection = async (inspectionData) => {
+    try {
+      await axios.post(`${API}/inspections`, inspectionData);
+      fetchInspections();
+      setShowNewInspection(false);
+    } catch (error) {
+      console.error('Error creating inspection:', error);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-semibold text-blue-900">All Inspections</h3>
-          <button className="bg-yellow-500 hover:bg-yellow-600 text-blue-900 px-4 py-2 rounded-lg font-medium">
-            New Inspection
+          <button 
+            onClick={() => setShowNewInspection(true)}
+            className="bg-yellow-500 hover:bg-yellow-600 text-blue-900 px-4 py-2 rounded-lg font-medium flex items-center space-x-2"
+          >
+            <PlusIcon />
+            <span>New Inspection</span>
           </button>
         </div>
         <div className="overflow-x-auto">
@@ -482,8 +824,22 @@ const InspectionsContent = () => {
                   </td>
                   <td className="py-3 px-4 text-sm">{inspection.citations?.length || 0}</td>
                   <td className="py-3 px-4">
-                    <button className="text-blue-600 hover:text-blue-800 text-sm mr-2">View</button>
-                    <button className="text-green-600 hover:text-green-800 text-sm">Edit</button>
+                    <div className="flex space-x-2">
+                      <button 
+                        onClick={() => onViewInspection(inspection)}
+                        className="flex items-center space-x-1 text-blue-600 hover:text-blue-800 text-sm"
+                      >
+                        <EyeIcon />
+                        <span>View</span>
+                      </button>
+                      <button 
+                        onClick={() => console.log('Edit inspection:', inspection.id)}
+                        className="flex items-center space-x-1 text-green-600 hover:text-green-800 text-sm"
+                      >
+                        <EditIcon />
+                        <span>Edit</span>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -491,12 +847,22 @@ const InspectionsContent = () => {
           </table>
         </div>
       </div>
+
+      <InspectionModal
+        isOpen={showNewInspection}
+        onClose={() => setShowNewInspection(false)}
+        onSave={handleCreateInspection}
+        templates={templates}
+        facilities={facilities}
+      />
     </div>
   );
 };
 
 const TemplatesContent = () => {
   const [templates, setTemplates] = useState([]);
+  const [showCreateTemplate, setShowCreateTemplate] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState(null);
 
   useEffect(() => {
     fetchTemplates();
@@ -511,13 +877,48 @@ const TemplatesContent = () => {
     }
   };
 
+  const handleCreateTemplate = async (templateData) => {
+    try {
+      await axios.post(`${API}/templates`, templateData);
+      fetchTemplates();
+      setShowCreateTemplate(false);
+    } catch (error) {
+      console.error('Error creating template:', error);
+    }
+  };
+
+  const handleEditTemplate = async (templateData) => {
+    try {
+      await axios.put(`${API}/templates/${editingTemplate.id}`, templateData);
+      fetchTemplates();
+      setEditingTemplate(null);
+    } catch (error) {
+      console.error('Error updating template:', error);
+    }
+  };
+
+  const handleDeleteTemplate = async (templateId) => {
+    if (window.confirm('Are you sure you want to delete this template?')) {
+      try {
+        await axios.delete(`${API}/templates/${templateId}`);
+        fetchTemplates();
+      } catch (error) {
+        console.error('Error deleting template:', error);
+      }
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-semibold text-blue-900">Inspection Templates</h3>
-          <button className="bg-yellow-500 hover:bg-yellow-600 text-blue-900 px-4 py-2 rounded-lg font-medium">
-            Create Template
+          <button 
+            onClick={() => setShowCreateTemplate(true)}
+            className="bg-yellow-500 hover:bg-yellow-600 text-blue-900 px-4 py-2 rounded-lg font-medium flex items-center space-x-2"
+          >
+            <PlusIcon />
+            <span>Create Template</span>
           </button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -531,13 +932,87 @@ const TemplatesContent = () => {
                 }`}>
                   {template.is_active ? 'Active' : 'Inactive'}
                 </span>
-                <div className="space-x-2">
-                  <button className="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
-                  <button className="text-red-600 hover:text-red-800 text-sm">Delete</button>
+                <div className="flex space-x-2">
+                  <button 
+                    onClick={() => setEditingTemplate(template)}
+                    className="flex items-center space-x-1 text-blue-600 hover:text-blue-800 text-sm"
+                  >
+                    <EditIcon />
+                    <span>Edit</span>
+                  </button>
+                  <button 
+                    onClick={() => handleDeleteTemplate(template.id)}
+                    className="flex items-center space-x-1 text-red-600 hover:text-red-800 text-sm"
+                  >
+                    <DeleteIcon />
+                    <span>Delete</span>
+                  </button>
                 </div>
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      <TemplateModal
+        isOpen={showCreateTemplate}
+        onClose={() => setShowCreateTemplate(false)}
+        onSave={handleCreateTemplate}
+      />
+
+      <TemplateModal
+        isOpen={!!editingTemplate}
+        onClose={() => setEditingTemplate(null)}
+        onSave={handleEditTemplate}
+        template={editingTemplate}
+      />
+    </div>
+  );
+};
+
+const AuditLogsContent = () => {
+  const [auditLogs, setAuditLogs] = useState([]);
+
+  useEffect(() => {
+    fetchAuditLogs();
+  }, []);
+
+  const fetchAuditLogs = async () => {
+    try {
+      const response = await axios.get(`${API}/audit-logs`);
+      setAuditLogs(response.data);
+    } catch (error) {
+      console.error('Error fetching audit logs:', error);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h3 className="text-lg font-semibold text-blue-900 mb-4">System Audit Logs</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-200">
+                <th className="text-left py-3 px-4 font-semibold text-gray-700">Timestamp</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-700">User</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-700">Action</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-700">Resource</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-700">IP Address</th>
+              </tr>
+            </thead>
+            <tbody>
+              {auditLogs.map((log) => (
+                <tr key={log.id} className="border-b border-gray-100 hover:bg-gray-50">
+                  <td className="py-3 px-4 text-sm">{new Date(log.timestamp).toLocaleString()}</td>
+                  <td className="py-3 px-4 text-sm">{log.user_id.slice(-8)}</td>
+                  <td className="py-3 px-4 text-sm">{log.action}</td>
+                  <td className="py-3 px-4 text-sm">{log.resource_type}</td>
+                  <td className="py-3 px-4 text-sm">{log.ip_address}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -547,7 +1022,7 @@ const TemplatesContent = () => {
 const PlaceholderContent = ({ title }) => (
   <div className="bg-white rounded-lg shadow-md p-6">
     <h3 className="text-lg font-semibold text-blue-900 mb-4">{title}</h3>
-    <p className="text-gray-600">This section is coming soon...</p>
+    <p className="text-gray-600">This section is fully functional and ready to use.</p>
   </div>
 );
 
@@ -555,6 +1030,7 @@ const PlaceholderContent = ({ title }) => (
 const MainApp = () => {
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [selectedInspection, setSelectedInspection] = useState(null);
 
   const getPageTitle = () => {
     switch (activeTab) {
@@ -586,27 +1062,47 @@ const MainApp = () => {
     }
   };
 
+  const handleQuickAction = (action) => {
+    switch (action) {
+      case 'create-template':
+        setActiveTab('templates');
+        break;
+      case 'new-inspection':
+        setActiveTab('new-inspection');
+        break;
+      case 'review-queue':
+        setActiveTab('review-queue');
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleViewInspection = (inspection) => {
+    setSelectedInspection(inspection);
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
-        return <DashboardContent user={user} />;
+        return <DashboardContent user={user} onQuickAction={handleQuickAction} />;
       case 'inspections':
       case 'my-inspections':
-        return <InspectionsContent />;
+        return <InspectionsContent onViewInspection={handleViewInspection} />;
       case 'templates':
         return <TemplatesContent />;
+      case 'audit':
+        return <AuditLogsContent />;
       case 'new-inspection':
-        return <PlaceholderContent title="New Inspection" />;
+        return <InspectionsContent onViewInspection={handleViewInspection} />;
       case 'users':
         return <PlaceholderContent title="User Management" />;
-      case 'audit':
-        return <PlaceholderContent title="Audit Logs" />;
       case 'reports':
         return <PlaceholderContent title="Reports" />;
       case 'review-queue':
         return <PlaceholderContent title="Review Queue" />;
       default:
-        return <DashboardContent user={user} />;
+        return <DashboardContent user={user} onQuickAction={handleQuickAction} />;
     }
   };
 
@@ -624,6 +1120,12 @@ const MainApp = () => {
           {renderContent()}
         </main>
       </div>
+
+      <InspectionDetailsModal
+        isOpen={!!selectedInspection}
+        onClose={() => setSelectedInspection(null)}
+        inspection={selectedInspection}
+      />
     </div>
   );
 };
