@@ -292,12 +292,29 @@ def create_compliance_router():
     
     @router.post("/scheduling/bulk-update")
     async def bulk_update_schedules(
-        request: BulkScheduleUpdateRequest,
+        schedule_ids: List[str] = Form(...),
+        frequencies: List[str] = Form(None),
+        assigned_tos: List[str] = Form(None),
+        start_dates: List[str] = Form(None),
         db: Session = Depends(get_db)
     ):
         """Bulk update multiple schedules"""
         scheduling_service = ComplianceSchedulingService(db)
-        updates = [update.dict() for update in request.updates]
+        
+        # Prepare update data
+        updates = []
+        for i, schedule_id in enumerate(schedule_ids):
+            update = {"schedule_id": schedule_id}
+            
+            if frequencies and i < len(frequencies):
+                update["frequency"] = frequencies[i]
+            if assigned_tos and i < len(assigned_tos):
+                update["assigned_to"] = assigned_tos[i]
+            if start_dates and i < len(start_dates):
+                update["start_date"] = start_dates[i]
+            
+            updates.append(update)
+        
         result = scheduling_service.bulk_update_schedules(updates)
         return result
     
