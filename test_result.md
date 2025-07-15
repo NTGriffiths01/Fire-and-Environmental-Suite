@@ -444,6 +444,9 @@ backend:
       - working: false
         agent: "testing"
         comment: "❌ MINOR ISSUE: Bulk update functionality has data handling bug. POST /api/compliance/scheduling/bulk-update response structure correct but encounters 'NoneType + timedelta' error when processing schedules with missing start_dates. Updated 0 schedules with 1 error. Response structure working with updated_count, error_count, errors fields. Core functionality implemented but needs data validation fix."
+      - working: false
+        agent: "testing"
+        comment: "❌ ENDPOINT ISSUE: Bulk schedule update endpoint still failing. Issue identified: endpoint expects Form data (schedule_ids, frequencies, assigned_tos) but schedules endpoint returns 500 Internal Server Error, preventing proper testing. Cannot retrieve schedules to test bulk update functionality. Need to fix /api/compliance/facilities/{facility_id}/schedules endpoint first."
 
   - task: "Phase 3: Scheduling Next Due Date Logic"
     implemented: true
