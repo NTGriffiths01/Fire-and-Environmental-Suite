@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form, BackgroundTasks
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 from datetime import date, datetime
@@ -6,10 +7,12 @@ from sqlalchemy.orm import Session
 from models import get_db
 from compliance_service import ComplianceService
 from compliance_scheduling import ComplianceSchedulingService
+from document_management import DocumentManagementService
 from compliance_models import (
     ComplianceFacility, ComplianceFunction, ComplianceSchedule, 
     ComplianceRecord, ComplianceDocument, get_frequency_display
 )
+import io
 
 # Additional Pydantic models for scheduling
 class ScheduleUpdateRequest(BaseModel):
