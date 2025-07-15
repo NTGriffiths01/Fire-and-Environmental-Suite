@@ -1165,6 +1165,298 @@ class BackendTester:
             self.log_result("Compliance Statistics", False, f"Error: {str(e)}")
             return False
 
+    # Phase 3: Scheduling System Tests
+    def test_scheduling_record_generation(self):
+        """Test automatic record generation for upcoming due dates"""
+        try:
+            # Test record generation with default 90 days ahead
+            response = self.session.post(f"{BASE_URL}/compliance/scheduling/generate-records")
+            if response.status_code == 200:
+                result = response.json()
+                self.log_result("Scheduling Record Generation (Default)", True, 
+                              f"Generated {result.get('records_generated', 0)} records, updated {result.get('records_updated', 0)} records")
+                
+                # Verify response structure
+                expected_fields = ["records_generated", "records_updated", "total_schedules_processed"]
+                if all(field in result for field in expected_fields):
+                    self.log_result("Record Generation Response Structure", True, "Response has correct structure")
+                else:
+                    self.log_result("Record Generation Response Structure", False, "Response missing expected fields")
+            else:
+                self.log_result("Scheduling Record Generation (Default)", False, f"Failed with status {response.status_code}")
+                return False
+            
+            # Test record generation with custom days ahead
+            response = self.session.post(f"{BASE_URL}/compliance/scheduling/generate-records?days_ahead=30")
+            if response.status_code == 200:
+                result = response.json()
+                self.log_result("Scheduling Record Generation (30 days)", True, 
+                              f"Generated {result.get('records_generated', 0)} records for 30 days ahead")
+            else:
+                self.log_result("Scheduling Record Generation (30 days)", False, f"Failed with status {response.status_code}")
+            
+            return True
+        except Exception as e:
+            self.log_result("Scheduling Record Generation", False, f"Error: {str(e)}")
+            return False
+    
+    def test_scheduling_overdue_updates(self):
+        """Test overdue status updates for past due records"""
+        try:
+            # Test overdue records update
+            response = self.session.post(f"{BASE_URL}/compliance/scheduling/update-overdue")
+            if response.status_code == 200:
+                result = response.json()
+                self.log_result("Scheduling Overdue Updates", True, 
+                              f"Updated {result.get('overdue_records_updated', 0)} overdue records")
+                
+                # Verify response structure
+                if "overdue_records_updated" in result:
+                    self.log_result("Overdue Update Response Structure", True, "Response has correct structure")
+                else:
+                    self.log_result("Overdue Update Response Structure", False, "Response missing expected fields")
+            else:
+                self.log_result("Scheduling Overdue Updates", False, f"Failed with status {response.status_code}")
+                return False
+            
+            return True
+        except Exception as e:
+            self.log_result("Scheduling Overdue Updates", False, f"Error: {str(e)}")
+            return False
+    
+    def test_scheduling_analytics(self):
+        """Test schedule analytics and insights"""
+        try:
+            # Test analytics without facility filter
+            response = self.session.get(f"{BASE_URL}/compliance/scheduling/analytics")
+            if response.status_code == 200:
+                analytics = response.json()
+                self.log_result("Scheduling Analytics (All Facilities)", True, 
+                              f"Retrieved analytics for {analytics.get('total_schedules', 0)} schedules")
+                
+                # Verify analytics structure
+                expected_fields = ["total_schedules", "frequency_breakdown", "upcoming_due_dates", "generated_at"]
+                if all(field in analytics for field in expected_fields):
+                    self.log_result("Analytics Response Structure", True, "Analytics have correct structure")
+                    
+                    # Test frequency breakdown
+                    freq_breakdown = analytics.get("frequency_breakdown", {})
+                    if isinstance(freq_breakdown, dict):
+                        self.log_result("Frequency Breakdown", True, f"Found frequencies: {list(freq_breakdown.keys())}")
+                    else:
+                        self.log_result("Frequency Breakdown", False, "Frequency breakdown is not a dictionary")
+                    
+                    # Test upcoming due dates
+                    upcoming = analytics.get("upcoming_due_dates", [])
+                    if isinstance(upcoming, list):
+                        self.log_result("Upcoming Due Dates", True, f"Found {len(upcoming)} upcoming due dates")
+                    else:
+                        self.log_result("Upcoming Due Dates", False, "Upcoming due dates is not a list")
+                else:
+                    self.log_result("Analytics Response Structure", False, "Analytics missing expected fields")
+            else:
+                self.log_result("Scheduling Analytics (All Facilities)", False, f"Failed with status {response.status_code}")
+                return False
+            
+            # Test analytics with facility filter
+            if hasattr(self, 'compliance_facility_id'):
+                response = self.session.get(f"{BASE_URL}/compliance/scheduling/analytics?facility_id={self.compliance_facility_id}")
+                if response.status_code == 200:
+                    facility_analytics = response.json()
+                    self.log_result("Scheduling Analytics (Facility Specific)", True, 
+                                  f"Retrieved facility-specific analytics for {facility_analytics.get('total_schedules', 0)} schedules")
+                else:
+                    self.log_result("Scheduling Analytics (Facility Specific)", False, f"Failed with status {response.status_code}")
+            
+            return True
+        except Exception as e:
+            self.log_result("Scheduling Analytics", False, f"Error: {str(e)}")
+            return False
+    
+    def test_scheduling_bulk_updates(self):
+        """Test bulk updating multiple schedules"""
+        try:
+            if not hasattr(self, 'compliance_schedule_id'):
+                self.log_result("Scheduling Bulk Updates", False, "No schedule ID available")
+                return False
+            
+            # Test bulk update with frequency change
+            bulk_update_data = {
+                "updates": [
+                    {
+                        "schedule_id": self.compliance_schedule_id,
+                        "frequency": "M",  # Change to monthly
+                        "assigned_to": "test_user@madoc.gov"
+                    }
+                ]
+            }
+            
+            response = self.session.post(f"{BASE_URL}/compliance/scheduling/bulk-update", json=bulk_update_data)
+            if response.status_code == 200:
+                result = response.json()
+                self.log_result("Scheduling Bulk Updates", True, 
+                              f"Updated {result.get('updated_count', 0)} schedules, {result.get('error_count', 0)} errors")
+                
+                # Verify response structure
+                expected_fields = ["updated_count", "error_count", "errors"]
+                if all(field in result for field in expected_fields):
+                    self.log_result("Bulk Update Response Structure", True, "Response has correct structure")
+                else:
+                    self.log_result("Bulk Update Response Structure", False, "Response missing expected fields")
+                
+                # Check for errors
+                if result.get("error_count", 0) == 0:
+                    self.log_result("Bulk Update Success", True, "No errors in bulk update")
+                else:
+                    self.log_result("Bulk Update Errors", False, f"Errors: {result.get('errors', [])}")
+            else:
+                self.log_result("Scheduling Bulk Updates", False, f"Failed with status {response.status_code}")
+                return False
+            
+            return True
+        except Exception as e:
+            self.log_result("Scheduling Bulk Updates", False, f"Error: {str(e)}")
+            return False
+    
+    def test_scheduling_next_due_date(self):
+        """Test updating next due date for a schedule"""
+        try:
+            if not hasattr(self, 'compliance_schedule_id'):
+                self.log_result("Scheduling Next Due Date", False, "No schedule ID available")
+                return False
+            
+            # Test updating next due date
+            response = self.session.put(f"{BASE_URL}/compliance/schedules/{self.compliance_schedule_id}/next-due-date")
+            if response.status_code == 200:
+                result = response.json()
+                self.log_result("Scheduling Next Due Date Update", True, "Next due date updated successfully")
+                
+                # Verify response structure
+                if "message" in result:
+                    self.log_result("Next Due Date Response Structure", True, "Response has correct structure")
+                else:
+                    self.log_result("Next Due Date Response Structure", False, "Response missing expected fields")
+            else:
+                self.log_result("Scheduling Next Due Date Update", False, f"Failed with status {response.status_code}")
+                return False
+            
+            return True
+        except Exception as e:
+            self.log_result("Scheduling Next Due Date", False, f"Error: {str(e)}")
+            return False
+    
+    def test_scheduling_enhanced_record_completion(self):
+        """Test enhanced record completion that auto-updates schedule's next due date"""
+        try:
+            # First, generate some records to have something to complete
+            gen_response = self.session.post(f"{BASE_URL}/compliance/scheduling/generate-records?days_ahead=30")
+            if gen_response.status_code != 200:
+                self.log_result("Enhanced Record Completion Setup", False, "Failed to generate test records")
+                return False
+            
+            # Get upcoming records to find one to complete
+            records_response = self.session.get(f"{BASE_URL}/compliance/records/upcoming?days_ahead=30")
+            if records_response.status_code == 200:
+                records = records_response.json()
+                if records:
+                    record_id = records[0]["id"]
+                    
+                    # Test completing a record
+                    completion_data = {
+                        "completed_by": "test_user@madoc.gov",
+                        "notes": "Test completion for scheduling system"
+                    }
+                    
+                    response = self.session.post(f"{BASE_URL}/compliance/records/{record_id}/complete", 
+                                               data=completion_data)
+                    if response.status_code == 200:
+                        result = response.json()
+                        self.log_result("Enhanced Record Completion", True, 
+                                      f"Record completed successfully, status: {result.get('status', 'unknown')}")
+                        
+                        # Verify the record was marked as completed
+                        if result.get("status") == "completed":
+                            self.log_result("Record Status Update", True, "Record status updated to completed")
+                        else:
+                            self.log_result("Record Status Update", False, f"Unexpected status: {result.get('status')}")
+                    else:
+                        self.log_result("Enhanced Record Completion", False, f"Failed with status {response.status_code}")
+                        return False
+                else:
+                    self.log_result("Enhanced Record Completion", True, "No upcoming records to complete (expected for new system)")
+            else:
+                self.log_result("Enhanced Record Completion", False, "Failed to get upcoming records")
+                return False
+            
+            return True
+        except Exception as e:
+            self.log_result("Enhanced Record Completion", False, f"Error: {str(e)}")
+            return False
+    
+    def test_scheduling_integration(self):
+        """Test integration between scheduling system and existing compliance tracking"""
+        try:
+            # Test that scheduling analytics integrate with dashboard data
+            if hasattr(self, 'compliance_facility_id'):
+                # Get dashboard data
+                dashboard_response = self.session.get(f"{BASE_URL}/compliance/facilities/{self.compliance_facility_id}/dashboard")
+                if dashboard_response.status_code == 200:
+                    dashboard_data = dashboard_response.json()
+                    
+                    # Get scheduling analytics
+                    analytics_response = self.session.get(f"{BASE_URL}/compliance/scheduling/analytics?facility_id={self.compliance_facility_id}")
+                    if analytics_response.status_code == 200:
+                        analytics_data = analytics_response.json()
+                        
+                        # Compare schedule counts
+                        dashboard_schedules = len(dashboard_data.get("schedules", []))
+                        analytics_schedules = analytics_data.get("total_schedules", 0)
+                        
+                        if dashboard_schedules == analytics_schedules:
+                            self.log_result("Scheduling Integration - Schedule Count", True, 
+                                          f"Dashboard and analytics show same schedule count: {dashboard_schedules}")
+                        else:
+                            self.log_result("Scheduling Integration - Schedule Count", False, 
+                                          f"Mismatch: Dashboard={dashboard_schedules}, Analytics={analytics_schedules}")
+                    else:
+                        self.log_result("Scheduling Integration", False, "Failed to get analytics data")
+                        return False
+                else:
+                    self.log_result("Scheduling Integration", False, "Failed to get dashboard data")
+                    return False
+            
+            # Test that record generation affects upcoming records count
+            initial_upcoming = self.session.get(f"{BASE_URL}/compliance/records/upcoming?days_ahead=90")
+            if initial_upcoming.status_code == 200:
+                initial_count = len(initial_upcoming.json())
+                
+                # Generate records
+                gen_response = self.session.post(f"{BASE_URL}/compliance/scheduling/generate-records?days_ahead=90")
+                if gen_response.status_code == 200:
+                    # Check upcoming records again
+                    final_upcoming = self.session.get(f"{BASE_URL}/compliance/records/upcoming?days_ahead=90")
+                    if final_upcoming.status_code == 200:
+                        final_count = len(final_upcoming.json())
+                        
+                        if final_count >= initial_count:
+                            self.log_result("Scheduling Integration - Record Generation", True, 
+                                          f"Record generation working: {initial_count} -> {final_count} upcoming records")
+                        else:
+                            self.log_result("Scheduling Integration - Record Generation", False, 
+                                          f"Record count decreased: {initial_count} -> {final_count}")
+                    else:
+                        self.log_result("Scheduling Integration - Record Generation", False, "Failed to get final upcoming records")
+                else:
+                    self.log_result("Scheduling Integration - Record Generation", False, "Failed to generate records")
+            else:
+                self.log_result("Scheduling Integration", False, "Failed to get initial upcoming records")
+                return False
+            
+            return True
+        except Exception as e:
+            self.log_result("Scheduling Integration", False, f"Error: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all backend tests in sequence"""
         print("🚀 Starting Fire and Environmental Safety Suite Backend Tests")
