@@ -856,8 +856,9 @@ async def upload_file(file: UploadFile = File(...), current_user: User = Depends
 async def root():
     return {"message": "Fire and Environmental Safety Suite API", "version": "1.0.0"}
 
-# Include router
+# Include routers
 app.include_router(api_router)
+app.include_router(sqlite_router, prefix="/api/v2", tags=["SQLite Database"])
 
 # CORS middleware
 app.add_middleware(
