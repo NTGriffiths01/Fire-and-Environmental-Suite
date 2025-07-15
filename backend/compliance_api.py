@@ -130,6 +130,26 @@ class BulkUploadResponse(BaseModel):
     error_count: int
     results: List[Dict[str, Any]]
 
+# Phase 5: Smart Features Models
+class TaskAssignmentRequest(BaseModel):
+    record_id: str
+    assigned_to: str
+    notes: Optional[str] = None
+
+class CommentRequest(BaseModel):
+    record_id: str
+    comment: str
+    comment_type: str = "general"
+
+class ReminderEmailResponse(BaseModel):
+    notifications_found: int
+    emails_sent: int
+    errors: int
+
+class ExportRequest(BaseModel):
+    facility_id: Optional[str] = None
+    format: str = "json"  # json, csv, excel
+
 # Helper functions
 def facility_to_dict(facility: ComplianceFacility) -> Dict[str, Any]:
     return {
