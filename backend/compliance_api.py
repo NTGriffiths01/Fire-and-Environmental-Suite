@@ -465,19 +465,6 @@ def create_compliance_router():
         documents = doc_service.get_documents_by_facility(facility_id)
         return documents
     
-    @router.get("/documents/statistics")
-    async def get_document_statistics(
-        facility_id: Optional[str] = None,
-        db: Session = Depends(get_db)
-    ):
-        """Get document statistics"""
-        try:
-            doc_service = DocumentManagementService(db)
-            stats = doc_service.get_document_statistics(facility_id)
-            return DocumentStatisticsResponse(**stats)
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Error getting document statistics: {str(e)}")
-    
     @router.post("/documents/bulk-upload")
     async def bulk_upload_documents(
         uploads: List[UploadFile] = File(...),
