@@ -664,6 +664,302 @@ class BackendTester:
             self.log_result("Role-Based Access Control", False, f"Error: {str(e)}")
             return False
     
+    def test_sqlite_database_migration(self):
+        """Test SQLite database migration system"""
+        try:
+            # Test if SQLite database file exists
+            import os
+            db_path = "/app/backend/fire_safety_suite.db"
+            if os.path.exists(db_path):
+                self.log_result("SQLite Database File", True, "SQLite database file exists")
+            else:
+                self.log_result("SQLite Database File", False, "SQLite database file not found")
+                return False
+            
+            # Test database connection by checking if we can access v2 endpoints
+            response = self.session.get(f"{BASE_URL}/v2/users")
+            if response.status_code in [200, 401]:  # 401 is expected without auth
+                self.log_result("SQLite API Connectivity", True, "SQLite API endpoints accessible")
+            else:
+                self.log_result("SQLite API Connectivity", False, f"SQLite API not accessible, status: {response.status_code}")
+                return False
+            
+            return True
+        except Exception as e:
+            self.log_result("SQLite Database Migration", False, f"Error: {str(e)}")
+            return False
+    
+    def test_sqlite_user_management(self):
+        """Test SQLite user management endpoints"""
+        try:
+            # Test GET users
+            response = self.session.get(f"{BASE_URL}/v2/users")
+            if response.status_code == 200:
+                users = response.json()
+                self.log_result("SQLite Get Users", True, f"Retrieved {len(users)} users from SQLite")
+            else:
+                self.log_result("SQLite Get Users", False, f"Failed with status {response.status_code}")
+                return False
+            
+            # Test CREATE user
+            user_data = {
+                "username": "sqlite_test_user@madoc.gov",
+                "role": "inspector"
+            }
+            response = self.session.post(f"{BASE_URL}/v2/users", json=user_data)
+            if response.status_code == 200:
+                user = response.json()
+                self.log_result("SQLite Create User", True, f"Created user: {user['username']}")
+                
+                # Test GET specific user
+                user_id = user["id"]
+                response = self.session.get(f"{BASE_URL}/v2/users/{user_id}")
+                if response.status_code == 200:
+                    retrieved_user = response.json()
+                    self.log_result("SQLite Get User by ID", True, f"Retrieved user: {retrieved_user['username']}")
+                else:
+                    self.log_result("SQLite Get User by ID", False, f"Failed with status {response.status_code}")
+            else:
+                self.log_result("SQLite Create User", False, f"Failed with status {response.status_code}")
+            
+            return True
+        except Exception as e:
+            self.log_result("SQLite User Management", False, f"Error: {str(e)}")
+            return False
+    
+    def test_sqlite_template_system(self):
+        """Test SQLite template management endpoints"""
+        try:
+            # Test GET templates
+            response = self.session.get(f"{BASE_URL}/v2/templates")
+            if response.status_code == 200:
+                templates = response.json()
+                self.log_result("SQLite Get Templates", True, f"Retrieved {len(templates)} templates from SQLite")
+                
+                # Check if seed templates are loaded
+                template_names = [t["name"] for t in templates]
+                expected_templates = [
+                    "Weekly Fire/Environmental Health & Safety Inspection",
+                    "Comprehensive Monthly Fire Safety, Sanitation & Equipment Inspection"
+                ]
+                
+                found_templates = [name for name in expected_templates if name in template_names]
+                if len(found_templates) >= 1:
+                    self.log_result("SQLite Seed Templates", True, f"Found {len(found_templates)} seed templates")
+                else:
+                    self.log_result("SQLite Seed Templates", False, "Seed templates not found")
+                
+                # Test GET specific template if available
+                if templates:
+                    template_id = templates[0]["id"]
+                    response = self.session.get(f"{BASE_URL}/v2/templates/{template_id}")
+                    if response.status_code == 200:
+                        template = response.json()
+                        self.log_result("SQLite Get Template by ID", True, f"Retrieved template: {template['name']}")
+                        
+                        # Verify JSON schema structure
+                        if "schema" in template and isinstance(template["schema"], dict):
+                            schema = template["schema"]
+                            if "$schema" in schema and "properties" in schema:
+                                self.log_result("SQLite Template Schema", True, "Template has valid JSON schema structure")
+                            else:
+                                self.log_result("SQLite Template Schema", False, "Template schema missing required fields")
+                        else:
+                            self.log_result("SQLite Template Schema", False, "Template schema not found or invalid")
+                    else:
+                        self.log_result("SQLite Get Template by ID", False, f"Failed with status {response.status_code}")
+            else:
+                self.log_result("SQLite Get Templates", False, f"Failed with status {response.status_code}")
+                return False
+            
+            # Test CREATE template
+            template_data = {
+                "name": "SQLite Test Template",
+                "schema": {
+                    "$schema": "https://json-schema.org/draft/2020-12/schema",
+                    "title": "Test Inspection",
+                    "type": "object",
+                    "properties": {
+                        "test_field": {"type": "boolean", "title": "Test Field"},
+                        "notes": {"type": "string", "title": "Notes"}
+                    },
+                    "required": ["test_field"]
+                }
+            }
+            response = self.session.post(f"{BASE_URL}/v2/templates", json=template_data)
+            if response.status_code == 200:
+                template = response.json()
+                self.log_result("SQLite Create Template", True, f"Created template: {template['name']}")
+            else:
+                self.log_result("SQLite Create Template", False, f"Failed with status {response.status_code}")
+            
+            return True
+        except Exception as e:
+            self.log_result("SQLite Template System", False, f"Error: {str(e)}")
+            return False
+    
+    def test_sqlite_inspection_workflow(self):
+        """Test SQLite inspection workflow"""
+        try:
+            # First get available templates
+            templates_response = self.session.get(f"{BASE_URL}/v2/templates")
+            if templates_response.status_code != 200:
+                self.log_result("SQLite Inspection Workflow", False, "Could not retrieve templates")
+                return False
+            
+            templates = templates_response.json()
+            if not templates:
+                self.log_result("SQLite Inspection Workflow", False, "No templates available")
+                return False
+            
+            template_id = templates[0]["id"]
+            
+            # Test CREATE inspection
+            inspection_data = {
+                "template_id": template_id,
+                "facility": "MCI-Cedar Junction",
+                "payload": {
+                    "location": "Cell Block A",
+                    "wallsCeilingClean": True,
+                    "lavatoriesStocked": True,
+                    "fireExtinguishersTagged": True,
+                    "emergencyExitsClear": True,
+                    "comments": "All systems operational"
+                }
+            }
+            response = self.session.post(f"{BASE_URL}/v2/inspections", json=inspection_data)
+            if response.status_code == 200:
+                inspection = response.json()
+                inspection_id = inspection["id"]
+                self.log_result("SQLite Create Inspection", True, f"Created inspection: {inspection_id}")
+                
+                # Test GET inspections
+                response = self.session.get(f"{BASE_URL}/v2/inspections")
+                if response.status_code == 200:
+                    inspections = response.json()
+                    self.log_result("SQLite Get Inspections", True, f"Retrieved {len(inspections)} inspections")
+                else:
+                    self.log_result("SQLite Get Inspections", False, f"Failed with status {response.status_code}")
+                
+                # Test GET specific inspection
+                response = self.session.get(f"{BASE_URL}/v2/inspections/{inspection_id}")
+                if response.status_code == 200:
+                    retrieved_inspection = response.json()
+                    self.log_result("SQLite Get Inspection by ID", True, f"Retrieved inspection: {retrieved_inspection['id']}")
+                else:
+                    self.log_result("SQLite Get Inspection by ID", False, f"Failed with status {response.status_code}")
+                
+                # Test UPDATE inspection status
+                response = self.session.put(f"{BASE_URL}/v2/inspections/{inspection_id}/status?status=submitted")
+                if response.status_code == 200:
+                    updated_inspection = response.json()
+                    if updated_inspection["status"] == "submitted":
+                        self.log_result("SQLite Update Inspection Status", True, "Status updated to submitted")
+                    else:
+                        self.log_result("SQLite Update Inspection Status", False, "Status not updated correctly")
+                else:
+                    self.log_result("SQLite Update Inspection Status", False, f"Failed with status {response.status_code}")
+            else:
+                self.log_result("SQLite Create Inspection", False, f"Failed with status {response.status_code}")
+                return False
+            
+            return True
+        except Exception as e:
+            self.log_result("SQLite Inspection Workflow", False, f"Error: {str(e)}")
+            return False
+    
+    def test_sqlite_corrective_actions(self):
+        """Test SQLite corrective actions system"""
+        try:
+            # First get an inspection to work with
+            inspections_response = self.session.get(f"{BASE_URL}/v2/inspections")
+            if inspections_response.status_code != 200:
+                self.log_result("SQLite Corrective Actions", False, "Could not retrieve inspections")
+                return False
+            
+            inspections = inspections_response.json()
+            if not inspections:
+                self.log_result("SQLite Corrective Actions", False, "No inspections available")
+                return False
+            
+            inspection_id = inspections[0]["id"]
+            
+            # Test CREATE corrective action
+            from datetime import date, timedelta
+            due_date = (date.today() + timedelta(days=30)).isoformat()
+            
+            action_data = {
+                "inspection_id": inspection_id,
+                "violation_ref": "ICC-FC-907",
+                "action_plan": "Replace faulty fire alarm system in Cell Block A",
+                "due_date": due_date
+            }
+            response = self.session.post(f"{BASE_URL}/v2/corrective-actions", json=action_data)
+            if response.status_code == 200:
+                action = response.json()
+                action_id = action["id"]
+                self.log_result("SQLite Create Corrective Action", True, f"Created corrective action: {action_id}")
+                
+                # Test GET corrective actions by inspection
+                response = self.session.get(f"{BASE_URL}/v2/corrective-actions/inspection/{inspection_id}")
+                if response.status_code == 200:
+                    actions = response.json()
+                    self.log_result("SQLite Get Corrective Actions", True, f"Retrieved {len(actions)} corrective actions")
+                else:
+                    self.log_result("SQLite Get Corrective Actions", False, f"Failed with status {response.status_code}")
+                
+                # Test COMPLETE corrective action
+                response = self.session.put(f"{BASE_URL}/v2/corrective-actions/{action_id}/complete")
+                if response.status_code == 200:
+                    completed_action = response.json()
+                    if completed_action["completed"]:
+                        self.log_result("SQLite Complete Corrective Action", True, "Corrective action marked as completed")
+                    else:
+                        self.log_result("SQLite Complete Corrective Action", False, "Corrective action not marked as completed")
+                else:
+                    self.log_result("SQLite Complete Corrective Action", False, f"Failed with status {response.status_code}")
+            else:
+                self.log_result("SQLite Create Corrective Action", False, f"Failed with status {response.status_code}")
+                return False
+            
+            return True
+        except Exception as e:
+            self.log_result("SQLite Corrective Actions", False, f"Error: {str(e)}")
+            return False
+    
+    def test_sqlite_statistics(self):
+        """Test SQLite statistics endpoints"""
+        try:
+            # Test dashboard statistics
+            response = self.session.get(f"{BASE_URL}/v2/statistics/dashboard")
+            if response.status_code == 200:
+                stats = response.json()
+                expected_keys = ["total_users", "total_templates", "total_inspections", "pending_reviews"]
+                if all(key in stats for key in expected_keys):
+                    self.log_result("SQLite Dashboard Statistics", True, f"Dashboard stats: {stats}")
+                else:
+                    self.log_result("SQLite Dashboard Statistics", False, "Missing expected statistics keys")
+            else:
+                self.log_result("SQLite Dashboard Statistics", False, f"Failed with status {response.status_code}")
+                return False
+            
+            # Test deputy statistics
+            response = self.session.get(f"{BASE_URL}/v2/statistics/deputy")
+            if response.status_code == 200:
+                deputy_stats = response.json()
+                expected_keys = ["pending_reviews", "completed_inspections", "total_inspections"]
+                if all(key in deputy_stats for key in expected_keys):
+                    self.log_result("SQLite Deputy Statistics", True, f"Deputy stats: {deputy_stats}")
+                else:
+                    self.log_result("SQLite Deputy Statistics", False, "Missing expected deputy statistics keys")
+            else:
+                self.log_result("SQLite Deputy Statistics", False, f"Failed with status {response.status_code}")
+            
+            return True
+        except Exception as e:
+            self.log_result("SQLite Statistics", False, f"Error: {str(e)}")
+            return False
+    
     def run_all_tests(self):
         """Run all backend tests in sequence"""
         print("🚀 Starting Fire and Environmental Safety Suite Backend Tests")
