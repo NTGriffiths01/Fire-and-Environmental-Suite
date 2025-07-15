@@ -30,7 +30,7 @@ target_metadata = None
 
 def get_url():
     # Get database URL from environment variable
-    db_url = os.getenv("DATABASE_URL", "postgresql://localhost/fire_safety_suite")
+    db_url = os.getenv("DATABASE_URL", "sqlite:///./fire_safety_suite.db")
     return db_url
 
 def run_migrations_offline() -> None:
