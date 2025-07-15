@@ -8,7 +8,11 @@ import json
 from pathlib import Path
 
 # Add backend directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent / "backend"))
+backend_dir = Path(__file__).parent.parent / "backend"
+sys.path.insert(0, str(backend_dir))
+
+# Change to backend directory for database path
+os.chdir(backend_dir)
 
 from models import SessionLocal
 from database_service import DatabaseService
