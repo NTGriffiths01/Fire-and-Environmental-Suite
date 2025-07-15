@@ -318,6 +318,7 @@ class BackendTester:
                         }
                     ]
                 },
+                "created_by": "admin",  # This field is required
                 "is_active": True
             }
             
