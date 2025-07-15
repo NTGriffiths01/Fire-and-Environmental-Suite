@@ -339,7 +339,9 @@ metadata:
   run_ui: false
 
 test_plan:
-  current_focus: []
+  current_focus:
+    - "Database Migration System"
+    - "SQLite Database Integration"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
