@@ -270,6 +270,7 @@ const Navigation = ({ activeTab, setActiveTab, user }) => {
     if (user.role === 'admin') {
       return [
         ...baseItems,
+        { id: 'compliance-dashboard', label: 'Compliance Dashboard', icon: ReviewIcon },
         { id: 'inspections', label: 'All Inspections', icon: InspectionIcon },
         { id: 'dynamic-forms', label: 'Dynamic Forms', icon: PlusIcon },
         { id: 'templates', label: 'Templates', icon: SettingsIcon },
@@ -280,6 +281,7 @@ const Navigation = ({ activeTab, setActiveTab, user }) => {
     } else if (user.role === 'inspector') {
       return [
         ...baseItems,
+        { id: 'compliance-dashboard', label: 'Compliance Dashboard', icon: ReviewIcon },
         { id: 'new-inspection', label: 'New Inspection', icon: PlusIcon },
         { id: 'dynamic-forms', label: 'Dynamic Forms', icon: PlusIcon },
         { id: 'my-inspections', label: 'My Inspections', icon: InspectionIcon },
@@ -288,6 +290,7 @@ const Navigation = ({ activeTab, setActiveTab, user }) => {
     } else if (user.role === 'deputy_of_operations') {
       return [
         ...baseItems,
+        { id: 'compliance-dashboard', label: 'Compliance Dashboard', icon: ReviewIcon },
         { id: 'review-queue', label: 'Review Queue', icon: ReviewIcon },
         { id: 'inspections', label: 'All Inspections', icon: InspectionIcon },
         { id: 'dynamic-forms', label: 'Dynamic Forms', icon: PlusIcon },
