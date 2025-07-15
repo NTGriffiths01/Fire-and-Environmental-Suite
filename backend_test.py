@@ -108,26 +108,28 @@ class BackendTester:
                     "email": user["email"],
                     "role": user["role"]
                 })
-                
-                # Test login with new inspector
-                login_response = self.session.post(f"{BASE_URL}/auth/login", json={
-                    "email": inspector_data["email"],
-                    "password": inspector_data["password"]
-                })
-                
-                if login_response.status_code == 200:
-                    login_data = login_response.json()
-                    self.inspector_token = login_data["access_token"]
-                    self.log_result("Inspector Login", True, "Inspector login successful")
-                else:
-                    self.log_result("Inspector Login", False, "Inspector login failed after registration")
-                
-                return True
+            elif response.status_code == 400 and "already registered" in response.text:
+                self.log_result("User Registration - Inspector", True, "Inspector user already exists (expected)")
             else:
                 self.log_result("User Registration - Inspector", False, 
                               f"Registration failed with status {response.status_code}", 
                               {"response": response.text})
                 return False
+            
+            # Test login with inspector (whether new or existing)
+            login_response = self.session.post(f"{BASE_URL}/auth/login", json={
+                "email": inspector_data["email"],
+                "password": inspector_data["password"]
+            })
+            
+            if login_response.status_code == 200:
+                login_data = login_response.json()
+                self.inspector_token = login_data["access_token"]
+                self.log_result("Inspector Login", True, "Inspector login successful")
+            else:
+                self.log_result("Inspector Login", False, "Inspector login failed")
+            
+            return True
                 
         except Exception as e:
             self.log_result("User Registration - Inspector", False, f"Registration error: {str(e)}")
