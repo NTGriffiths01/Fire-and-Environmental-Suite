@@ -469,9 +469,9 @@ class BackendTester:
             ]
             
             for finding in test_findings:
-                suggestion_data = {"finding": finding}
-                response = self.session.post(f"{BASE_URL}/citations/suggest", 
-                                           json=suggestion_data, headers=headers)
+                # Use query parameter instead of JSON body
+                response = self.session.post(f"{BASE_URL}/citations/suggest?finding={finding}", 
+                                           headers=headers)
                 if response.status_code == 200:
                     suggestions = response.json()
                     self.log_result(f"Citation Suggestion - {finding[:30]}...", True, 
