@@ -1,0 +1,206 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  AWS_REGION: us-gov-west-1
+  ECR_REPOSITORY_FRONTEND: fire-safety-frontend
+  ECR_REPOSITORY_BACKEND: fire-safety-backend
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      mongodb:
+        image: mongo:7.0
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand(\"ping\")'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'yarn'
+        cache-dependency-path: frontend/yarn.lock
+
+    - name: Install Python dependencies
+      run: |
+        cd backend
+        pip install -r requirements.txt
+
+    - name: Install Node.js dependencies
+      run: |
+        cd frontend
+        yarn install --frozen-lockfile
+
+    - name: Run Python tests
+      run: |
+        cd backend
+        python -m pytest tests/ -v --cov=. --cov-report=xml
+      env:
+        POSTGRES_URL: postgresql://postgres:password@localhost:5432/test_db
+        MONGO_URL: mongodb://localhost:27017/test_db
+        SECRET_KEY: test-secret-key
+
+    - name: Run Node.js tests
+      run: |
+        cd frontend
+        yarn test --coverage --watchAll=false
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./backend/coverage.xml
+        flags: backend
+        name: backend-coverage
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  build:
+    needs: [test, security]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Build and push frontend image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        cd frontend
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:$IMAGE_TAG
+        docker tag $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:latest
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY_FRONTEND:latest
+
+    - name: Build and push backend image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        cd backend
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:$IMAGE_TAG
+        docker tag $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:latest
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY_BACKEND:latest
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: production
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.6.0
+
+    - name: Terraform Init
+      run: |
+        cd infrastructure/terraform
+        terraform init
+
+    - name: Terraform Plan
+      run: |
+        cd infrastructure/terraform
+        terraform plan -out=tfplan
+
+    - name: Terraform Apply
+      run: |
+        cd infrastructure/terraform
+        terraform apply tfplan
+
+    - name: Update ECS service
+      run: |
+        aws ecs update-service --cluster fire-safety-cluster --service fire-safety-frontend --force-new-deployment
+        aws ecs update-service --cluster fire-safety-cluster --service fire-safety-backend --force-new-deployment
+
+    - name: Wait for deployment
+      run: |
+        aws ecs wait services-stable --cluster fire-safety-cluster --services fire-safety-frontend fire-safety-backend
+
+  notify:
+    needs: [deploy]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+    - name: Notify deployment status
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        channel: '#deployments'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}

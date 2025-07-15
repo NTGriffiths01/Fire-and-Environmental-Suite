@@ -1,6 +1,7 @@
 fastapi==0.110.1
 uvicorn==0.25.0
 boto3>=1.34.129
+aiobotocore>=2.10.0
 requests-oauthlib>=2.0.0
 cryptography>=42.0.8
 python-dotenv>=1.0.1
@@ -24,5 +25,12 @@ python-multipart>=0.0.9
 jq>=1.6.0
 typer>=0.9.0
 bcrypt>=4.0.1
-fastapi-azure-auth>=4.0.0
 weasyprint>=59.0
+asyncpg>=0.29.0
+sqlalchemy>=2.0.25
+alembic>=1.13.1
+psycopg2-binary>=2.9.9
+redis>=5.0.1
+celery>=5.3.4
+moto>=4.2.14
+httpx>=0.27.0
