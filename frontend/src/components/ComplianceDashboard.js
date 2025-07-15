@@ -465,15 +465,73 @@ export default function ComplianceDashboard() {
                     {expandedRows.has(schedule.schedule_id) && (
                       <tr className="bg-blue-50">
                         <td colSpan="6" className="px-4 py-4">
-                          <div className="space-y-3">
-                            <div className="text-sm">
-                              <strong>Frequency:</strong> {schedule.frequency_display}
-                            </div>
-                            {schedule.citation_references.length > 0 && (
-                              <div className="text-sm">
-                                <strong>Citations:</strong> {schedule.citation_references.join(', ')}
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                              <div>
+                                <div className="text-sm mb-2">
+                                  <strong>Frequency:</strong> {schedule.frequency_display}
+                                </div>
+                                {schedule.citation_references.length > 0 && (
+                                  <div className="text-sm mb-2">
+                                    <strong>Citations:</strong> {schedule.citation_references.join(', ')}
+                                  </div>
+                                )}
+                                {schedule.assigned_to && (
+                                  <div className="text-sm mb-2">
+                                    <strong>Assigned to:</strong> {schedule.assigned_to}
+                                  </div>
+                                )}
                               </div>
-                            )}
+                              
+                              <div className="flex flex-wrap gap-2">
+                                <button
+                                  onClick={() => {
+                                    setSelectedRecord({
+                                      id: `${schedule.schedule_id}-current`,
+                                      schedule_id: schedule.schedule_id,
+                                      function_name: schedule.function_name,
+                                      facility_name: processedDashboardData?.facility_name,
+                                      assigned_to: schedule.assigned_to
+                                    });
+                                    openModal('document');
+                                  }}
+                                  className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
+                                >
+                                  📎 Manage Documents
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setSelectedRecord({
+                                      id: `${schedule.schedule_id}-current`,
+                                      schedule_id: schedule.schedule_id,
+                                      function_name: schedule.function_name,
+                                      facility_name: processedDashboardData?.facility_name,
+                                      assigned_to: schedule.assigned_to
+                                    });
+                                    openModal('task');
+                                  }}
+                                  className="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700"
+                                >
+                                  👤 Assign Task
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setSelectedRecord({
+                                      id: `${schedule.schedule_id}-current`,
+                                      schedule_id: schedule.schedule_id,
+                                      function_name: schedule.function_name,
+                                      facility_name: processedDashboardData?.facility_name,
+                                      assigned_to: schedule.assigned_to
+                                    });
+                                    openModal('comment');
+                                  }}
+                                  className="px-3 py-1 bg-purple-600 text-white text-sm rounded-md hover:bg-purple-700"
+                                >
+                                  💬 Add Comment
+                                </button>
+                              </div>
+                            </div>
+                            
                             <div className="text-sm">
                               <strong>Scheduled Months:</strong>
                             </div>
