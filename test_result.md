@@ -558,6 +558,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ TESTED: Task assignment system functional. Get task assignments endpoint working correctly, retrieved 1 task assignment. Assignment endpoint accessible but has form validation requirements. Core assignment logic implemented and working."
+      - working: true
+        agent: "testing"
+        comment: "✅ FIXED: Task assignment system now working correctly! POST /api/compliance/tasks/assign endpoint fixed to accept Form data instead of JSON. Successfully assigned task to test_inspector@madoc.gov. Form data format working: record_id, assigned_to, assigned_by, notes as form fields. No more 422 validation errors or foreign key constraint issues."
 
   - task: "Phase 5: Comment System"
     implemented: true
