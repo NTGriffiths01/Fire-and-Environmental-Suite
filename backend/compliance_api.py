@@ -548,17 +548,19 @@ def create_compliance_router():
     # **NEW PHASE 5: Smart Features Endpoints**
     @router.post("/tasks/assign")
     async def assign_task(
-        request: TaskAssignmentRequest,
+        record_id: str = Form(...),
+        assigned_to: str = Form(...),
         assigned_by: str = Form(...),
+        notes: str = Form(None),
         db: Session = Depends(get_db)
     ):
         """Assign a compliance task to a user"""
         smart_service = SmartFeaturesService(db)
         result = smart_service.assign_task(
-            record_id=request.record_id,
-            assigned_to=request.assigned_to,
+            record_id=record_id,
+            assigned_to=assigned_to,
             assigned_by=assigned_by,
-            notes=request.notes
+            notes=notes
         )
         
         if not result["success"]:
