@@ -35,6 +35,56 @@ const getStatusIcon = (status, hasDocuments) => {
   }
 };
 
+// Calculate which months should show status based on frequency
+const getScheduledMonths = (frequency, startMonth = 1) => {
+  const months = [];
+  
+  switch (frequency) {
+    case 'W': // Weekly - show every month (weekly tasks happen every month)
+      for (let i = 1; i <= 12; i++) {
+        months.push(i);
+      }
+      break;
+    case 'M': // Monthly - show every month
+      for (let i = 1; i <= 12; i++) {
+        months.push(i);
+      }
+      break;
+    case 'Q': // Quarterly - show every 3 months
+      for (let i = startMonth; i <= 12; i += 3) {
+        months.push(i);
+      }
+      break;
+    case 'SA': // Semi-Annually - show every 6 months
+      for (let i = startMonth; i <= 12; i += 6) {
+        months.push(i);
+      }
+      break;
+    case 'A': // Annually - show once per year
+      months.push(startMonth);
+      break;
+    case '2y': // Every 2 years - show once per year (alternating years)
+      if (new Date().getFullYear() % 2 === 0) {
+        months.push(startMonth);
+      }
+      break;
+    case '3y': // Every 3 years - show once per year (every 3rd year)
+      if (new Date().getFullYear() % 3 === 0) {
+        months.push(startMonth);
+      }
+      break;
+    case '5y': // Every 5 years - show once per year (every 5th year)
+      if (new Date().getFullYear() % 5 === 0) {
+        months.push(startMonth);
+      }
+      break;
+    default:
+      months.push(startMonth);
+  }
+  
+  return months;
+};
+
 // Month names
 const MONTH_NAMES = [
   'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -123,6 +173,49 @@ export default function ComplianceDashboard() {
       toast.error('Error completing record');
     }
   };
+
+  // Process dashboard data to only show status for scheduled months
+  const processedDashboardData = dashboardData ? {
+    ...dashboardData,
+    schedules: dashboardData.schedules.map(schedule => {
+      const scheduledMonths = getScheduledMonths(schedule.frequency);
+      const processedMonthlyStatus = {};
+      
+      // Initialize all months as empty
+      for (let month = 1; month <= 12; month++) {
+        processedMonthlyStatus[month] = {
+          status: null,
+          due_date: null,
+          completed_date: null,
+          has_documents: false,
+          isScheduled: false
+        };
+      }
+      
+      // Only populate scheduled months
+      scheduledMonths.forEach(month => {
+        if (schedule.monthly_status[month]) {
+          processedMonthlyStatus[month] = {
+            ...schedule.monthly_status[month],
+            isScheduled: true
+          };
+        } else {
+          processedMonthlyStatus[month] = {
+            status: 'pending',
+            due_date: null,
+            completed_date: null,
+            has_documents: false,
+            isScheduled: true
+          };
+        }
+      });
+      
+      return {
+        ...schedule,
+        monthly_status: processedMonthlyStatus
+      };
+    })
+  } : null;
 
   if (facilitiesLoading) {
     return (
@@ -216,15 +309,18 @@ export default function ComplianceDashboard() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-900"></div>
           <span className="ml-2 text-gray-600">Loading dashboard...</span>
         </div>
-      ) : dashboardData && dashboardData.schedules.length > 0 ? (
+      ) : processedDashboardData && processedDashboardData.schedules.length > 0 ? (
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           {/* Matrix Header */}
           <div className="bg-gray-50 p-4 border-b">
             <h3 className="text-lg font-semibold text-gray-900">
-              {dashboardData.facility_name} - {dashboardData.year}
+              {processedDashboardData.facility_name} - {processedDashboardData.year}
             </h3>
             <p className="text-sm text-gray-600">
               Click on rows to expand details • Icons: ✅ Completed, ❌ Overdue, ⏳ Pending, ⬆️ Documents Uploaded
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              Status indicators only appear for months when tasks are due based on their frequency
             </p>
           </div>
 
@@ -253,7 +349,7 @@ export default function ComplianceDashboard() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {dashboardData.schedules.map((schedule) => (
+                {processedDashboardData.schedules.map((schedule) => (
                   <React.Fragment key={schedule.schedule_id}>
                     <tr 
                       className={`hover:bg-gray-50 cursor-pointer ${expandedRows.has(schedule.schedule_id) ? 'bg-blue-50' : ''}`}
@@ -286,11 +382,24 @@ export default function ComplianceDashboard() {
                             {Array.from({ length: 3 }, (_, mIndex) => {
                               const monthNum = qIndex * 3 + mIndex + 1;
                               const monthStatus = schedule.monthly_status[monthNum];
+                              
+                              // Only show status if this month is scheduled
+                              if (!monthStatus.isScheduled) {
+                                return (
+                                  <div
+                                    key={monthNum}
+                                    className="h-8 w-8 rounded border-2 border-gray-200 bg-gray-50"
+                                    title={`${MONTH_NAMES[monthNum - 1]} ${processedDashboardData.year}: Not scheduled`}
+                                  >
+                                  </div>
+                                );
+                              }
+                              
                               return (
                                 <div
                                   key={monthNum}
-                                  className={`h-8 w-8 rounded border-2 flex items-center justify-center text-xs font-medium ${getStatusColor(monthStatus.status)}`}
-                                  title={`${MONTH_NAMES[monthNum - 1]} ${dashboardData.year}: ${monthStatus.status}`}
+                                  className={`h-8 w-8 rounded border-2 flex items-center justify-center text-xs font-medium cursor-pointer ${getStatusColor(monthStatus.status)}`}
+                                  title={`${MONTH_NAMES[monthNum - 1]} ${processedDashboardData.year}: ${monthStatus.status}`}
                                 >
                                   {getStatusIcon(monthStatus.status, monthStatus.has_documents)}
                                 </div>
@@ -315,10 +424,12 @@ export default function ComplianceDashboard() {
                               </div>
                             )}
                             <div className="text-sm">
-                              <strong>Monthly Details:</strong>
+                              <strong>Scheduled Months:</strong>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
-                              {Object.entries(schedule.monthly_status).map(([month, status]) => (
+                              {Object.entries(schedule.monthly_status)
+                                .filter(([month, status]) => status.isScheduled)
+                                .map(([month, status]) => (
                                 <div key={month} className="text-xs p-2 bg-white rounded border">
                                   <div className="font-medium">{MONTH_NAMES[parseInt(month) - 1]}</div>
                                   <div className={`capitalize ${status.status === 'completed' ? 'text-green-600' : status.status === 'overdue' ? 'text-red-600' : 'text-yellow-600'}`}>
