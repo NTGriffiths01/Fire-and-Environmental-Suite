@@ -1,16 +1,38 @@
-from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form, BackgroundTasks
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 from datetime import date, datetime
 from sqlalchemy.orm import Session
 from models import get_db
 from compliance_service import ComplianceService
+from compliance_scheduling import ComplianceSchedulingService
 from compliance_models import (
     ComplianceFacility, ComplianceFunction, ComplianceSchedule, 
     ComplianceRecord, ComplianceDocument, get_frequency_display
 )
 
-# Pydantic models for API
+# Additional Pydantic models for scheduling
+class ScheduleUpdateRequest(BaseModel):
+    schedule_id: str
+    frequency: Optional[str] = None
+    assigned_to: Optional[str] = None
+    start_date: Optional[date] = None
+
+class BulkScheduleUpdateRequest(BaseModel):
+    updates: List[ScheduleUpdateRequest]
+
+class ScheduleAnalyticsResponse(BaseModel):
+    total_schedules: int
+    frequency_breakdown: Dict[str, int]
+    upcoming_due_dates: List[Dict[str, Any]]
+    generated_at: datetime
+
+class RecordGenerationResponse(BaseModel):
+    records_generated: int
+    records_updated: int
+    total_schedules_processed: int
+
+# Existing Pydantic models...
 class FacilityResponse(BaseModel):
     id: str
     name: str
@@ -196,6 +218,58 @@ def create_compliance_router():
             raise HTTPException(status_code=404, detail="Schedule not found")
         return schedule_to_dict(schedule)
     
+    # **NEW PHASE 3: Scheduling System Endpoints**
+    @router.post("/scheduling/generate-records", response_model=RecordGenerationResponse)
+    async def generate_upcoming_records(
+        background_tasks: BackgroundTasks,
+        days_ahead: int = 90,
+        db: Session = Depends(get_db)
+    ):
+        """Generate compliance records for upcoming due dates"""
+        scheduling_service = ComplianceSchedulingService(db)
+        result = scheduling_service.generate_upcoming_records(days_ahead)
+        return RecordGenerationResponse(**result)
+    
+    @router.post("/scheduling/update-overdue")
+    async def update_overdue_records(db: Session = Depends(get_db)):
+        """Update status of overdue records"""
+        scheduling_service = ComplianceSchedulingService(db)
+        result = scheduling_service.update_overdue_records()
+        return result
+    
+    @router.get("/scheduling/analytics", response_model=ScheduleAnalyticsResponse)
+    async def get_schedule_analytics(
+        facility_id: str = None,
+        db: Session = Depends(get_db)
+    ):
+        """Get analytics for scheduling system"""
+        scheduling_service = ComplianceSchedulingService(db)
+        analytics = scheduling_service.get_schedule_analytics(facility_id)
+        return ScheduleAnalyticsResponse(**analytics)
+    
+    @router.post("/scheduling/bulk-update")
+    async def bulk_update_schedules(
+        request: BulkScheduleUpdateRequest,
+        db: Session = Depends(get_db)
+    ):
+        """Bulk update multiple schedules"""
+        scheduling_service = ComplianceSchedulingService(db)
+        updates = [update.dict() for update in request.updates]
+        result = scheduling_service.bulk_update_schedules(updates)
+        return result
+    
+    @router.put("/schedules/{schedule_id}/next-due-date")
+    async def update_schedule_next_due_date(
+        schedule_id: str,
+        db: Session = Depends(get_db)
+    ):
+        """Update the next due date for a schedule"""
+        scheduling_service = ComplianceSchedulingService(db)
+        success = scheduling_service.update_schedule_next_due_date(schedule_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Schedule not found")
+        return {"message": "Next due date updated successfully"}
+    
     # Record endpoints
     @router.post("/records/{record_id}/complete")
     async def complete_record(
@@ -208,6 +282,11 @@ def create_compliance_router():
         record = service.complete_compliance_record(record_id, completed_by, notes)
         if not record:
             raise HTTPException(status_code=404, detail="Record not found")
+        
+        # Update the schedule's next due date
+        scheduling_service = ComplianceSchedulingService(db)
+        scheduling_service.update_schedule_next_due_date(record.schedule_id)
+        
         return record_to_dict(record)
     
     @router.get("/records/overdue")
