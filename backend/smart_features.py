@@ -75,7 +75,6 @@ class SmartFeaturesService:
             # Update record notes with comment thread
             if record.notes:
                 try:
-                    import json
                     notes_data = json.loads(record.notes)
                     if not isinstance(notes_data, dict):
                         notes_data = {"comments": []}
