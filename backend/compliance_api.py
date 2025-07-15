@@ -659,12 +659,13 @@ def create_compliance_router():
     
     @router.post("/export")
     async def export_compliance_data(
-        request: ExportRequest,
+        facility_id: str = Form(None),
+        format: str = Form("json"),
         db: Session = Depends(get_db)
     ):
         """Export compliance data in various formats"""
         smart_service = SmartFeaturesService(db)
-        result = smart_service.export_compliance_data(request.facility_id, request.format)
+        result = smart_service.export_compliance_data(facility_id, format)
         
         if not result.get("success", True):
             raise HTTPException(status_code=400, detail=result.get("error", "Export failed"))
