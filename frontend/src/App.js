@@ -1221,6 +1221,8 @@ const MainApp = () => {
       case 'inspections':
       case 'my-inspections':
         return <InspectionsContent onViewInspection={handleViewInspection} />;
+      case 'dynamic-forms':
+        return <DynamicInspectionContent />;
       case 'templates':
         return <TemplatesContent />;
       case 'audit':
