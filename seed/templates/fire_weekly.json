@@ -1,0 +1,15 @@
+{
+  "$id": "fire_weekly",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Weekly Fire/Environmental Health & Safety Inspection",
+  "type": "object",
+  "properties": {
+    "location": { "type": "string" },
+    "wallsCeilingClean": { "type": "boolean", "title": "Walls/Ceiling clean" },
+    "lavatoriesStocked": { "type": "boolean", "title": "Lavatories stocked" },
+    "fireExtinguishersTagged": { "type": "boolean", "title": "Extinguishers tagged/charged" },
+    "emergencyExitsClear": { "type": "boolean", "title": "Emergency exits clear" },
+    "comments": { "type": "string" }
+  },
+  "required": ["location", "emergencyExitsClear"]
+}
