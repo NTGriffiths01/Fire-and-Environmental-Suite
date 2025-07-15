@@ -541,9 +541,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Compliance Dashboard Component"
+    []
   stuck_tasks:
-    - "Compliance Dashboard Component"
+    []
   test_all: false
   test_priority: "high_first"
 
