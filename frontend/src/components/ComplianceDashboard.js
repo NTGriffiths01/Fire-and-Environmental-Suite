@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import DocumentUpload from './DocumentUpload';
+import TaskAssignment from './TaskAssignment';
+import CommentSystem from './CommentSystem';
+import NotificationPanel from './NotificationPanel';
+import ExportPanel from './ExportPanel';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
