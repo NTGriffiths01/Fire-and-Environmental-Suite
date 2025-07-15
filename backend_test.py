@@ -157,25 +157,27 @@ class BackendTester:
                     "user_id": user["id"],
                     "role": user["role"]
                 })
-                
-                # Test deputy login
-                login_response = self.session.post(f"{BASE_URL}/auth/login", json={
-                    "email": deputy_data["email"],
-                    "password": deputy_data["password"]
-                })
-                
-                if login_response.status_code == 200:
-                    login_data = login_response.json()
-                    self.deputy_token = login_data["access_token"]
-                    self.log_result("Deputy Login", True, "Deputy login successful")
-                else:
-                    self.log_result("Deputy Login", False, "Deputy login failed after creation")
-                
-                return True
+            elif response.status_code == 400 and "already registered" in response.text:
+                self.log_result("Deputy User Creation", True, "Deputy user already exists (expected)")
             else:
                 self.log_result("Deputy User Creation", False, 
                               f"Creation failed with status {response.status_code}")
                 return False
+            
+            # Test deputy login (whether new or existing)
+            login_response = self.session.post(f"{BASE_URL}/auth/login", json={
+                "email": deputy_data["email"],
+                "password": deputy_data["password"]
+            })
+            
+            if login_response.status_code == 200:
+                login_data = login_response.json()
+                self.deputy_token = login_data["access_token"]
+                self.log_result("Deputy Login", True, "Deputy login successful")
+            else:
+                self.log_result("Deputy Login", False, "Deputy login failed")
+            
+            return True
                 
         except Exception as e:
             self.log_result("Deputy User Creation", False, f"Creation error: {str(e)}")
