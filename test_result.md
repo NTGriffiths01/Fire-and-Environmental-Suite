@@ -522,9 +522,9 @@ backend:
 
   - task: "Phase 4: Document Statistics"
     implemented: true
-    working: false
+    working: true
     file: "document_management.py"
-    stuck_count: 1
+    stuck_count: 0
     priority: "medium"
     needs_retesting: false
     status_history:
@@ -534,6 +534,9 @@ backend:
       - working: false
         agent: "testing"
         comment: "❌ STILL FAILING: Document statistics endpoint still returns 404 'Document not found' error. GET /api/compliance/documents/statistics endpoint implemented correctly in compliance_api.py but returning wrong error message. Issue appears to be in DocumentManagementService.get_document_statistics() method or database query."
+      - working: true
+        agent: "testing"
+        comment: "✅ FIXED: Document statistics endpoint now working correctly! GET /api/compliance/documents/statistics returns proper statistics structure. Fixed route collision issue by moving /documents/statistics route before /documents/{document_id} in compliance_api.py. Statistics retrieved successfully: {'total_documents': 0, 'total_size': 0, 'average_size': 0.0, 'type_breakdown': {}, 'category_breakdown': {}}. All expected fields present."
 
   - task: "Phase 4: Facility Documents"
     implemented: true
