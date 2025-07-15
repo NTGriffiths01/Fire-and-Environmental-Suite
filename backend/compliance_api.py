@@ -545,6 +545,111 @@ def create_compliance_router():
         stats = service.get_compliance_statistics(facility_id)
         return ComplianceStatisticsResponse(**stats)
     
+    # **NEW PHASE 5: Smart Features Endpoints**
+    @router.post("/tasks/assign")
+    async def assign_task(
+        request: TaskAssignmentRequest,
+        assigned_by: str = Form(...),
+        db: Session = Depends(get_db)
+    ):
+        """Assign a compliance task to a user"""
+        smart_service = SmartFeaturesService(db)
+        result = smart_service.assign_task(
+            record_id=request.record_id,
+            assigned_to=request.assigned_to,
+            assigned_by=assigned_by,
+            notes=request.notes
+        )
+        
+        if not result["success"]:
+            raise HTTPException(status_code=400, detail=result["error"])
+        
+        return result
+    
+    @router.get("/tasks/assignments")
+    async def get_task_assignments(
+        facility_id: str = None,
+        assigned_to: str = None,
+        db: Session = Depends(get_db)
+    ):
+        """Get task assignments with filtering"""
+        smart_service = SmartFeaturesService(db)
+        assignments = smart_service.get_task_assignments(facility_id, assigned_to)
+        return assignments
+    
+    @router.post("/comments")
+    async def add_comment(
+        request: CommentRequest,
+        user: str = Form(...),
+        db: Session = Depends(get_db)
+    ):
+        """Add a comment to a compliance record"""
+        smart_service = SmartFeaturesService(db)
+        result = smart_service.add_comment(
+            record_id=request.record_id,
+            comment=request.comment,
+            user=user,
+            comment_type=request.comment_type
+        )
+        
+        if not result["success"]:
+            raise HTTPException(status_code=400, detail=result["error"])
+        
+        return result
+    
+    @router.get("/records/{record_id}/comments")
+    async def get_comments(record_id: str, db: Session = Depends(get_db)):
+        """Get all comments for a record"""
+        smart_service = SmartFeaturesService(db)
+        comments = smart_service.get_comments(record_id)
+        return comments
+    
+    @router.get("/notifications/overdue")
+    async def get_overdue_notifications(
+        days_ahead: int = 7,
+        db: Session = Depends(get_db)
+    ):
+        """Get overdue and upcoming task notifications"""
+        smart_service = SmartFeaturesService(db)
+        notifications = smart_service.get_overdue_notifications(days_ahead)
+        return notifications
+    
+    @router.post("/notifications/send-reminders")
+    async def send_reminder_emails(
+        background_tasks: BackgroundTasks,
+        days_ahead: int = 7,
+        db: Session = Depends(get_db)
+    ):
+        """Send reminder emails for upcoming and overdue tasks"""
+        smart_service = SmartFeaturesService(db)
+        result = smart_service.send_reminder_emails(days_ahead)
+        return ReminderEmailResponse(**result)
+    
+    @router.get("/activity-feed")
+    async def get_activity_feed(
+        facility_id: str = None,
+        limit: int = 50,
+        db: Session = Depends(get_db)
+    ):
+        """Get recent activity feed"""
+        smart_service = SmartFeaturesService(db)
+        feed = smart_service.get_activity_feed(facility_id, limit)
+        return feed
+    
+    @router.post("/export")
+    async def export_compliance_data(
+        request: ExportRequest,
+        db: Session = Depends(get_db)
+    ):
+        """Export compliance data in various formats"""
+        smart_service = SmartFeaturesService(db)
+        result = smart_service.export_compliance_data(request.facility_id, request.format)
+        
+        if not result.get("success", True):
+            raise HTTPException(status_code=400, detail=result.get("error", "Export failed"))
+        
+        return result
+    
     return router
 
 # Export for use in main server
