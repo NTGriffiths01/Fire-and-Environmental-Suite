@@ -960,6 +960,208 @@ class BackendTester:
             self.log_result("SQLite Statistics", False, f"Error: {str(e)}")
             return False
     
+    def test_compliance_facilities(self):
+        """Test compliance facilities endpoints"""
+        try:
+            # Test GET facilities
+            response = self.session.get(f"{BASE_URL}/compliance/facilities")
+            if response.status_code == 200:
+                facilities = response.json()
+                self.log_result("Compliance Get Facilities", True, f"Retrieved {len(facilities)} compliance facilities")
+                
+                # Store first facility ID for later use
+                if facilities:
+                    self.compliance_facility_id = facilities[0]["id"]
+                    
+                    # Test GET specific facility
+                    facility_response = self.session.get(f"{BASE_URL}/compliance/facilities/{self.compliance_facility_id}")
+                    if facility_response.status_code == 200:
+                        facility = facility_response.json()
+                        self.log_result("Compliance Get Facility by ID", True, f"Retrieved facility: {facility['name']}")
+                    else:
+                        self.log_result("Compliance Get Facility by ID", False, f"Failed with status {facility_response.status_code}")
+                else:
+                    self.log_result("Compliance Facilities", False, "No facilities found")
+                    return False
+            else:
+                self.log_result("Compliance Get Facilities", False, f"Failed with status {response.status_code}")
+                return False
+            
+            return True
+        except Exception as e:
+            self.log_result("Compliance Facilities", False, f"Error: {str(e)}")
+            return False
+    
+    def test_compliance_functions(self):
+        """Test compliance functions endpoints"""
+        try:
+            # Test GET compliance functions
+            response = self.session.get(f"{BASE_URL}/compliance/functions")
+            if response.status_code == 200:
+                functions = response.json()
+                self.log_result("Compliance Get Functions", True, f"Retrieved {len(functions)} compliance functions")
+                
+                # Store first function ID for later use
+                if functions:
+                    self.compliance_function_id = functions[0]["id"]
+                    
+                    # Test GET specific function
+                    function_response = self.session.get(f"{BASE_URL}/compliance/functions/{self.compliance_function_id}")
+                    if function_response.status_code == 200:
+                        function = function_response.json()
+                        self.log_result("Compliance Get Function by ID", True, f"Retrieved function: {function['name']}")
+                        
+                        # Verify function structure
+                        expected_fields = ["id", "name", "category", "default_frequency", "citation_references"]
+                        if all(field in function for field in expected_fields):
+                            self.log_result("Compliance Function Structure", True, "Function has correct structure")
+                        else:
+                            self.log_result("Compliance Function Structure", False, "Function missing expected fields")
+                    else:
+                        self.log_result("Compliance Get Function by ID", False, f"Failed with status {function_response.status_code}")
+                else:
+                    self.log_result("Compliance Functions", False, "No functions found")
+                    return False
+            else:
+                self.log_result("Compliance Get Functions", False, f"Failed with status {response.status_code}")
+                return False
+            
+            return True
+        except Exception as e:
+            self.log_result("Compliance Functions", False, f"Error: {str(e)}")
+            return False
+    
+    def test_compliance_schedules(self):
+        """Test compliance schedules endpoints"""
+        try:
+            if not hasattr(self, 'compliance_facility_id'):
+                self.log_result("Compliance Schedules", False, "No facility ID available")
+                return False
+            
+            # Test GET facility schedules
+            response = self.session.get(f"{BASE_URL}/compliance/facilities/{self.compliance_facility_id}/schedules")
+            if response.status_code == 200:
+                schedules = response.json()
+                self.log_result("Compliance Get Facility Schedules", True, f"Retrieved {len(schedules)} schedules for facility")
+                
+                # Store first schedule ID for later use
+                if schedules:
+                    self.compliance_schedule_id = schedules[0]["id"]
+                    
+                    # Verify schedule structure
+                    schedule = schedules[0]
+                    expected_fields = ["id", "facility_id", "function_id", "frequency", "next_due_date"]
+                    if all(field in schedule for field in expected_fields):
+                        self.log_result("Compliance Schedule Structure", True, "Schedule has correct structure")
+                    else:
+                        self.log_result("Compliance Schedule Structure", False, "Schedule missing expected fields")
+                else:
+                    self.log_result("Compliance Schedules", False, "No schedules found")
+                    return False
+            else:
+                self.log_result("Compliance Get Facility Schedules", False, f"Failed with status {response.status_code}")
+                return False
+            
+            return True
+        except Exception as e:
+            self.log_result("Compliance Schedules", False, f"Error: {str(e)}")
+            return False
+    
+    def test_compliance_records(self):
+        """Test compliance records endpoints"""
+        try:
+            # Test GET overdue records
+            response = self.session.get(f"{BASE_URL}/compliance/records/overdue")
+            if response.status_code == 200:
+                overdue_records = response.json()
+                self.log_result("Compliance Get Overdue Records", True, f"Retrieved {len(overdue_records)} overdue records")
+            else:
+                self.log_result("Compliance Get Overdue Records", False, f"Failed with status {response.status_code}")
+            
+            # Test GET upcoming records
+            response = self.session.get(f"{BASE_URL}/compliance/records/upcoming?days_ahead=30")
+            if response.status_code == 200:
+                upcoming_records = response.json()
+                self.log_result("Compliance Get Upcoming Records", True, f"Retrieved {len(upcoming_records)} upcoming records")
+            else:
+                self.log_result("Compliance Get Upcoming Records", False, f"Failed with status {response.status_code}")
+            
+            return True
+        except Exception as e:
+            self.log_result("Compliance Records", False, f"Error: {str(e)}")
+            return False
+    
+    def test_compliance_dashboard(self):
+        """Test compliance dashboard endpoints"""
+        try:
+            if not hasattr(self, 'compliance_facility_id'):
+                self.log_result("Compliance Dashboard", False, "No facility ID available")
+                return False
+            
+            # Test GET facility dashboard
+            current_year = datetime.now().year
+            response = self.session.get(f"{BASE_URL}/compliance/facilities/{self.compliance_facility_id}/dashboard?year={current_year}")
+            if response.status_code == 200:
+                dashboard = response.json()
+                self.log_result("Compliance Facility Dashboard", True, f"Retrieved dashboard for facility with {len(dashboard.get('schedules', []))} schedules")
+                
+                # Verify dashboard structure
+                expected_fields = ["facility_id", "facility_name", "year", "schedules"]
+                if all(field in dashboard for field in expected_fields):
+                    self.log_result("Compliance Dashboard Structure", True, "Dashboard has correct structure")
+                    
+                    # Check schedule structure if available
+                    if dashboard.get("schedules"):
+                        schedule = dashboard["schedules"][0]
+                        schedule_fields = ["schedule_id", "function_name", "frequency", "monthly_status"]
+                        if all(field in schedule for field in schedule_fields):
+                            self.log_result("Compliance Dashboard Schedule Structure", True, "Schedule structure correct")
+                        else:
+                            self.log_result("Compliance Dashboard Schedule Structure", False, "Schedule structure incorrect")
+                else:
+                    self.log_result("Compliance Dashboard Structure", False, "Dashboard missing expected fields")
+            else:
+                self.log_result("Compliance Facility Dashboard", False, f"Failed with status {response.status_code}")
+                return False
+            
+            return True
+        except Exception as e:
+            self.log_result("Compliance Dashboard", False, f"Error: {str(e)}")
+            return False
+    
+    def test_compliance_statistics(self):
+        """Test compliance statistics endpoints"""
+        try:
+            # Test GET compliance statistics
+            response = self.session.get(f"{BASE_URL}/compliance/statistics")
+            if response.status_code == 200:
+                stats = response.json()
+                self.log_result("Compliance Statistics", True, f"Retrieved compliance statistics")
+                
+                # Verify statistics structure
+                expected_fields = ["total_records", "completed_records", "completion_rate", "overdue_records"]
+                if all(field in stats for field in expected_fields):
+                    self.log_result("Compliance Statistics Structure", True, f"Statistics: {stats}")
+                else:
+                    self.log_result("Compliance Statistics Structure", False, "Statistics missing expected fields")
+            else:
+                self.log_result("Compliance Statistics", False, f"Failed with status {response.status_code}")
+                return False
+            
+            # Test facility-specific statistics if we have a facility ID
+            if hasattr(self, 'compliance_facility_id'):
+                response = self.session.get(f"{BASE_URL}/compliance/statistics?facility_id={self.compliance_facility_id}")
+                if response.status_code == 200:
+                    facility_stats = response.json()
+                    self.log_result("Compliance Facility Statistics", True, f"Retrieved facility-specific statistics")
+                else:
+                    self.log_result("Compliance Facility Statistics", False, f"Failed with status {response.status_code}")
+            
+            return True
+        except Exception as e:
+            self.log_result("Compliance Statistics", False, f"Error: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all backend tests in sequence"""
         print("🚀 Starting Fire and Environmental Safety Suite Backend Tests")
@@ -1001,6 +1203,18 @@ class BackendTester:
         self.test_sqlite_inspection_workflow()
         self.test_sqlite_corrective_actions()
         self.test_sqlite_statistics()
+        
+        # Compliance Tracking System Tests
+        print("\n" + "=" * 70)
+        print("📋 TESTING COMPLIANCE TRACKING SYSTEM")
+        print("=" * 70)
+        
+        self.test_compliance_facilities()
+        self.test_compliance_functions()
+        self.test_compliance_schedules()
+        self.test_compliance_records()
+        self.test_compliance_dashboard()
+        self.test_compliance_statistics()
         
         # Summary
         print("\n" + "=" * 70)
