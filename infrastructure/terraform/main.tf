@@ -1,15 +1,23 @@
 terraform {
-  required_version = ">= 1.0"
+  required_version = ">= 1.5"
   required_providers {
     aws = {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
   }
+  backend "s3" {
+    bucket = "madoc-terraform-state"
+    key    = "fire-safety-suite/terraform.tfstate"
+    region = "us-gov-east-1"
+    encrypt = true
+  }
 }
 
 provider "aws" {
-  region = var.aws_region
+  region            = "us-gov-east-1"
+  partition         = "aws-us-gov"
+  s3_use_path_style = true
 }
 
 # Variables
