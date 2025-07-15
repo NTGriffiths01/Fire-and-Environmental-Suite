@@ -92,18 +92,21 @@ class FixedEndpointTester:
             print(f"📋 Found {len(schedules)} schedules to test with")
             
             # Test bulk update with schedules that might have missing start_dates
-            bulk_updates = []
-            for i, schedule in enumerate(schedules[:3]):  # Test with first 3 schedules
-                bulk_updates.append({
-                    "schedule_id": schedule["id"],
-                    "frequency": "M",  # Monthly
-                    "assigned_to": f"test_user_{i}@madoc.gov"
-                })
+            # The endpoint expects Form data, not JSON
+            schedule_ids = [schedule["id"] for schedule in schedules[:3]]
+            frequencies = ["M", "M", "M"]  # Monthly for all
+            assigned_tos = ["test_user_0@madoc.gov", "test_user_1@madoc.gov", "test_user_2@madoc.gov"]
             
-            print(f"🔄 Testing bulk update with {len(bulk_updates)} schedule updates")
+            form_data = {
+                'schedule_ids': schedule_ids,
+                'frequencies': frequencies,
+                'assigned_tos': assigned_tos
+            }
             
-            # Test the bulk update endpoint
-            response = self.session.post(f"{BASE_URL}/compliance/scheduling/bulk-update", json=bulk_updates)
+            print(f"🔄 Testing bulk update with {len(schedule_ids)} schedule updates")
+            
+            # Test the bulk update endpoint with form data
+            response = self.session.post(f"{BASE_URL}/compliance/scheduling/bulk-update", data=form_data)
             
             if response.status_code == 200:
                 result = response.json()
@@ -196,15 +199,15 @@ class FixedEndpointTester:
             
             print(f"📝 Testing assignment with record: {record_id}")
             
-            # Test task assignment
-            assignment_data = {
-                "record_id": record_id,
-                "assigned_to": "test_inspector@madoc.gov",
-                "assigned_by": "admin@madoc.gov",
-                "notes": "Test assignment for compliance task"
+            # Test task assignment with form data (not JSON)
+            form_data = {
+                'record_id': record_id,
+                'assigned_to': 'test_inspector@madoc.gov',
+                'assigned_by': 'admin@madoc.gov',
+                'notes': 'Test assignment for compliance task'
             }
             
-            response = self.session.post(f"{BASE_URL}/compliance/tasks/assign", json=assignment_data)
+            response = self.session.post(f"{BASE_URL}/compliance/tasks/assign", data=form_data)
             
             print(f"📤 Assignment request sent, status: {response.status_code}")
             
@@ -267,15 +270,15 @@ class FixedEndpointTester:
             
             print(f"💭 Testing comment with record: {record_id}")
             
-            # Test adding a comment
-            comment_data = {
-                "record_id": record_id,
-                "comment": "This is a test comment for the compliance record",
-                "user": "admin@madoc.gov",
-                "comment_type": "general"
+            # Test adding a comment with form data (not JSON)
+            form_data = {
+                'record_id': record_id,
+                'comment': 'This is a test comment for the compliance record',
+                'user': 'admin@madoc.gov',
+                'comment_type': 'general'
             }
             
-            response = self.session.post(f"{BASE_URL}/compliance/comments", json=comment_data)
+            response = self.session.post(f"{BASE_URL}/compliance/comments", data=form_data)
             
             print(f"📤 Comment request sent, status: {response.status_code}")
             
