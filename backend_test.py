@@ -1782,6 +1782,227 @@ class BackendTester:
             self.log_result("Data Export", False, f"Error: {str(e)}")
             return False
 
+    def test_fixed_endpoints(self):
+        """Test the 4 specific endpoints that were previously failing"""
+        print("=" * 80)
+        print("TESTING FIXED ENDPOINTS - FOCUSED TEST")
+        print("=" * 80)
+        
+        # Test 1: Bulk Schedule Update Fix
+        self.test_bulk_schedule_update_fix()
+        
+        # Test 2: Document Statistics Fix
+        self.test_document_statistics_fix()
+        
+        # Test 3: Task Assignment Fix
+        self.test_task_assignment_fix()
+        
+        # Test 4: Comment System Fix
+        self.test_comment_system_fix()
+    
+    def test_bulk_schedule_update_fix(self):
+        """Test POST /api/compliance/scheduling/bulk-update - should handle schedules with missing start_dates properly"""
+        try:
+            # First get some schedules to update
+            response = self.session.get(f"{BASE_URL}/compliance/facilities")
+            if response.status_code != 200:
+                self.log_result("Bulk Schedule Update Fix - Get Facilities", False, "Could not get facilities")
+                return
+            
+            facilities = response.json()
+            if not facilities:
+                self.log_result("Bulk Schedule Update Fix - Get Facilities", False, "No facilities found")
+                return
+            
+            facility_id = facilities[0]["id"]
+            
+            # Get schedules for the facility
+            response = self.session.get(f"{BASE_URL}/compliance/facilities/{facility_id}/schedules")
+            if response.status_code != 200:
+                self.log_result("Bulk Schedule Update Fix - Get Schedules", False, "Could not get schedules")
+                return
+            
+            schedules = response.json()
+            if not schedules:
+                self.log_result("Bulk Schedule Update Fix - Get Schedules", False, "No schedules found")
+                return
+            
+            # Test bulk update with schedules that might have missing start_dates
+            bulk_updates = []
+            for i, schedule in enumerate(schedules[:3]):  # Test with first 3 schedules
+                bulk_updates.append({
+                    "schedule_id": schedule["id"],
+                    "frequency": "M",  # Monthly
+                    "assigned_to": f"test_user_{i}@madoc.gov"
+                })
+            
+            # Test the bulk update endpoint
+            response = self.session.post(f"{BASE_URL}/compliance/scheduling/bulk-update", json=bulk_updates)
+            
+            if response.status_code == 200:
+                result = response.json()
+                updated_count = result.get("updated_count", 0)
+                error_count = result.get("error_count", 0)
+                errors = result.get("errors", [])
+                
+                # Check if the fix worked - should handle None start_dates without 'NoneType + timedelta' error
+                if error_count == 0 or not any("NoneType" in str(error) for error in errors):
+                    self.log_result("Bulk Schedule Update Fix", True, 
+                                  f"✅ FIXED: Bulk update handled missing start_dates properly. Updated: {updated_count}, Errors: {error_count}")
+                else:
+                    self.log_result("Bulk Schedule Update Fix", False, 
+                                  f"❌ STILL FAILING: NoneType error still present. Errors: {errors}")
+            else:
+                self.log_result("Bulk Schedule Update Fix", False, 
+                              f"❌ ENDPOINT ERROR: Status {response.status_code}, Response: {response.text}")
+                
+        except Exception as e:
+            self.log_result("Bulk Schedule Update Fix", False, f"❌ EXCEPTION: {str(e)}")
+    
+    def test_document_statistics_fix(self):
+        """Test GET /api/compliance/documents/statistics - should return proper statistics without 404 errors"""
+        try:
+            # Test document statistics endpoint
+            response = self.session.get(f"{BASE_URL}/compliance/documents/statistics")
+            
+            if response.status_code == 200:
+                stats = response.json()
+                expected_fields = ["total_documents", "total_size", "average_size", "type_breakdown", "category_breakdown"]
+                
+                if all(field in stats for field in expected_fields):
+                    self.log_result("Document Statistics Fix", True, 
+                                  f"✅ FIXED: Document statistics endpoint working correctly. Stats: {stats}")
+                else:
+                    self.log_result("Document Statistics Fix", False, 
+                                  f"❌ STRUCTURE ISSUE: Missing expected fields. Got: {list(stats.keys())}")
+            elif response.status_code == 404:
+                self.log_result("Document Statistics Fix", False, 
+                              f"❌ STILL FAILING: 404 error still present. Response: {response.text}")
+            else:
+                self.log_result("Document Statistics Fix", False, 
+                              f"❌ ENDPOINT ERROR: Status {response.status_code}, Response: {response.text}")
+                
+        except Exception as e:
+            self.log_result("Document Statistics Fix", False, f"❌ EXCEPTION: {str(e)}")
+    
+    def test_task_assignment_fix(self):
+        """Test POST /api/compliance/tasks/assign - should work without foreign key constraint errors"""
+        try:
+            # First get a record to assign
+            response = self.session.get(f"{BASE_URL}/compliance/records/upcoming?days_ahead=90")
+            if response.status_code != 200:
+                self.log_result("Task Assignment Fix - Get Records", False, "Could not get records")
+                return
+            
+            records = response.json()
+            if not records:
+                # Try to generate some records first
+                gen_response = self.session.post(f"{BASE_URL}/compliance/scheduling/generate-records")
+                if gen_response.status_code == 200:
+                    # Try again to get records
+                    response = self.session.get(f"{BASE_URL}/compliance/records/upcoming?days_ahead=90")
+                    if response.status_code == 200:
+                        records = response.json()
+                
+                if not records:
+                    self.log_result("Task Assignment Fix - Get Records", False, "No records available for assignment")
+                    return
+            
+            record_id = records[0]["id"] if records else None
+            if not record_id:
+                self.log_result("Task Assignment Fix - Get Records", False, "No valid record ID found")
+                return
+            
+            # Test task assignment
+            assignment_data = {
+                "record_id": record_id,
+                "assigned_to": "test_inspector@madoc.gov",
+                "assigned_by": "admin@madoc.gov",
+                "notes": "Test assignment for compliance task"
+            }
+            
+            response = self.session.post(f"{BASE_URL}/compliance/tasks/assign", json=assignment_data)
+            
+            if response.status_code == 200:
+                result = response.json()
+                if result.get("success"):
+                    self.log_result("Task Assignment Fix", True, 
+                                  f"✅ FIXED: Task assignment working correctly. Assigned to: {result.get('assigned_to')}")
+                else:
+                    error_msg = result.get("error", "Unknown error")
+                    if "foreign key" in error_msg.lower():
+                        self.log_result("Task Assignment Fix", False, 
+                                      f"❌ STILL FAILING: Foreign key constraint error: {error_msg}")
+                    else:
+                        self.log_result("Task Assignment Fix", False, 
+                                      f"❌ OTHER ERROR: {error_msg}")
+            elif response.status_code == 422:
+                self.log_result("Task Assignment Fix", False, 
+                              f"❌ STILL FAILING: 422 validation error. Response: {response.text}")
+            else:
+                self.log_result("Task Assignment Fix", False, 
+                              f"❌ ENDPOINT ERROR: Status {response.status_code}, Response: {response.text}")
+                
+        except Exception as e:
+            self.log_result("Task Assignment Fix", False, f"❌ EXCEPTION: {str(e)}")
+    
+    def test_comment_system_fix(self):
+        """Test POST /api/compliance/comments - should work without validation errors"""
+        try:
+            # First get a record to comment on
+            response = self.session.get(f"{BASE_URL}/compliance/records/upcoming?days_ahead=90")
+            if response.status_code != 200:
+                self.log_result("Comment System Fix - Get Records", False, "Could not get records")
+                return
+            
+            records = response.json()
+            if not records:
+                # Try to generate some records first
+                gen_response = self.session.post(f"{BASE_URL}/compliance/scheduling/generate-records")
+                if gen_response.status_code == 200:
+                    # Try again to get records
+                    response = self.session.get(f"{BASE_URL}/compliance/records/upcoming?days_ahead=90")
+                    if response.status_code == 200:
+                        records = response.json()
+                
+                if not records:
+                    self.log_result("Comment System Fix - Get Records", False, "No records available for comments")
+                    return
+            
+            record_id = records[0]["id"] if records else None
+            if not record_id:
+                self.log_result("Comment System Fix - Get Records", False, "No valid record ID found")
+                return
+            
+            # Test adding a comment
+            comment_data = {
+                "record_id": record_id,
+                "comment": "This is a test comment for the compliance record",
+                "user": "admin@madoc.gov",
+                "comment_type": "general"
+            }
+            
+            response = self.session.post(f"{BASE_URL}/compliance/comments", json=comment_data)
+            
+            if response.status_code == 200:
+                result = response.json()
+                if result.get("success"):
+                    self.log_result("Comment System Fix", True, 
+                                  f"✅ FIXED: Comment system working correctly. Comment ID: {result.get('comment_id')}")
+                else:
+                    error_msg = result.get("error", "Unknown error")
+                    self.log_result("Comment System Fix", False, 
+                                  f"❌ BUSINESS LOGIC ERROR: {error_msg}")
+            elif response.status_code == 422:
+                self.log_result("Comment System Fix", False, 
+                              f"❌ STILL FAILING: 422 validation error. Response: {response.text}")
+            else:
+                self.log_result("Comment System Fix", False, 
+                              f"❌ ENDPOINT ERROR: Status {response.status_code}, Response: {response.text}")
+                
+        except Exception as e:
+            self.log_result("Comment System Fix", False, f"❌ EXCEPTION: {str(e)}")
+
     def run_all_tests(self):
         """Run all backend tests in sequence"""
         print("🚀 Starting Fire and Environmental Safety Suite Backend Tests")
