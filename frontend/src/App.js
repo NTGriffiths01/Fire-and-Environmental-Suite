@@ -1267,9 +1267,35 @@ const MainApp = () => {
 // Main App Component
 const App = () => {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <AppContent />
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#363636',
+              color: '#fff',
+            },
+            success: {
+              duration: 3000,
+              style: {
+                background: '#065f46',
+                color: '#fff',
+              },
+            },
+            error: {
+              duration: 5000,
+              style: {
+                background: '#dc2626',
+                color: '#fff',
+              },
+            },
+          }}
+        />
+      </AuthProvider>
+    </QueryClientProvider>
   );
 };
 
