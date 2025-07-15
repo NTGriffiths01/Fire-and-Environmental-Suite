@@ -464,14 +464,15 @@ class BackendTester:
             # Test citation suggestions
             test_findings = [
                 "Fire alarm system not responding properly",
-                "Emergency exit door blocked by equipment",
+                "Emergency exit door blocked by equipment", 
                 "Sprinkler system pressure below normal range"
             ]
             
             for finding in test_findings:
-                # Use query parameter instead of JSON body
-                response = self.session.post(f"{BASE_URL}/citations/suggest?finding={finding}", 
-                                           headers=headers)
+                # Use form data instead of JSON
+                form_data = {"finding": finding}
+                response = self.session.post(f"{BASE_URL}/citations/suggest", 
+                                           data=form_data, headers=headers)
                 if response.status_code == 200:
                     suggestions = response.json()
                     self.log_result(f"Citation Suggestion - {finding[:30]}...", True, 
