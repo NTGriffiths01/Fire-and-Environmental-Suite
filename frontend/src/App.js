@@ -2,6 +2,7 @@ import React, { useState, useEffect, createContext, useContext } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import axios from 'axios';
+import ComplianceDashboard from './components/ComplianceDashboard';
 import './App.css';
 
 // Create a React Query client
