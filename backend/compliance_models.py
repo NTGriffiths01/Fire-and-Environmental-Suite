@@ -62,7 +62,7 @@ class ComplianceRecord(Base):
     due_date = Column(Date, nullable=False)
     completed_date = Column(Date)
     status = Column(String(20), default="pending")
-    completed_by = Column(String(36), ForeignKey("users.id"))
+    completed_by = Column(String(100))  # Changed to allow flexible user identification
     notes = Column(Text)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
