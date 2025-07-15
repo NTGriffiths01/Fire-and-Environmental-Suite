@@ -426,13 +426,13 @@ class BackendTester:
                 self.log_result("Get Inspections - Deputy", False, f"Failed with status {response.status_code}")
             
             # Test APPROVE inspection (status transition: submitted -> approved)
-            review_data = {
+            review_form_data = {
                 "action": "approve",
                 "comments": "Inspection completed thoroughly. All safety systems are functioning properly."
             }
             
             response = self.session.post(f"{BASE_URL}/inspections/{self.inspection_id}/review", 
-                                       json=review_data, headers=deputy_headers)
+                                       data=review_form_data, headers=deputy_headers)
             if response.status_code == 200:
                 self.log_result("Approve Inspection", True, "Inspection approved successfully")
             else:
