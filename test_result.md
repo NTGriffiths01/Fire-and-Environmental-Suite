@@ -398,6 +398,21 @@ backend:
         comment: "✅ TESTED: Compliance statistics system working correctly. GET /api/compliance/statistics returns total_records, completed_records, completion_rate, overdue_records. Facility-specific statistics working. Statistics structure validation passed with 0.0% completion rate (expected for new system)."
 
 frontend:
+  - task: "Compliance Dashboard Component"
+    implemented: true
+    working: false
+    file: "components/ComplianceDashboard.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented new Compliance Dashboard frontend component that replicates the physical wallboard system with facility selection, year selection, matrix table display, statistics panel, and row expansion functionality."
+      - working: false
+        agent: "testing"
+        comment: "❌ CRITICAL ISSUE CONFIRMED: Compliance Dashboard has major functionality issue. WORKING FEATURES: ✅ Navigation to Compliance Dashboard, ✅ Facility selection dropdown (17 facilities), ✅ Year selection dropdown, ✅ Matrix table display with quarterly headers (Q1-Q4), ✅ Statistics panel (Total Records, Completed, Completion Rate, Overdue), ✅ Row expansion functionality, ✅ Frequency labels (W, M, Q, SA, A), ✅ Citation references display, ✅ API integration with backend endpoints, ✅ Responsive design. CRITICAL ISSUE: ❌ ALL status cells in the matrix show hourglass (⏳) icons for EVERY month, violating the core requirement that tasks should only show status indicators for months when they're actually due based on frequency. Weekly tasks should show weekly, Monthly tasks monthly, Quarterly tasks every 3 months, etc. Currently the system shows pending status for all months regardless of task frequency, making the compliance tracking inaccurate and not reflecting actual compliance schedules."
+
   - task: "Authentication UI"
     implemented: true
     working: true
