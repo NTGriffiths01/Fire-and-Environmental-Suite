@@ -210,14 +210,6 @@ class ComplianceSchedulingService:
                             schedule.frequency
                         )
                     
-                    # Ensure start_date is set if it was None
-                    if schedule.start_date is None:
-                        schedule.start_date = date.today()
-                        schedule.next_due_date = calculate_next_due_date(
-                            schedule.start_date, 
-                            schedule.frequency
-                        )
-                    
                     schedule.updated_at = datetime.utcnow()
                     updated_count += 1
                 else:
