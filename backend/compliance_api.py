@@ -581,17 +581,19 @@ def create_compliance_router():
     
     @router.post("/comments")
     async def add_comment(
-        request: CommentRequest,
+        record_id: str = Form(...),
+        comment: str = Form(...),
         user: str = Form(...),
+        comment_type: str = Form("general"),
         db: Session = Depends(get_db)
     ):
         """Add a comment to a compliance record"""
         smart_service = SmartFeaturesService(db)
         result = smart_service.add_comment(
-            record_id=request.record_id,
-            comment=request.comment,
+            record_id=record_id,
+            comment=comment,
             user=user,
-            comment_type=request.comment_type
+            comment_type=comment_type
         )
         
         if not result["success"]:
