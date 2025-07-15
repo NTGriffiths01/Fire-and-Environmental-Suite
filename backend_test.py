@@ -1219,6 +1219,19 @@ class BackendTester:
         self.test_compliance_dashboard()
         self.test_compliance_statistics()
         
+        # Phase 3: Scheduling System Tests
+        print("\n" + "=" * 70)
+        print("⏰ TESTING PHASE 3: SCHEDULING SYSTEM")
+        print("=" * 70)
+        
+        self.test_scheduling_record_generation()
+        self.test_scheduling_overdue_updates()
+        self.test_scheduling_analytics()
+        self.test_scheduling_bulk_updates()
+        self.test_scheduling_next_due_date()
+        self.test_scheduling_enhanced_record_completion()
+        self.test_scheduling_integration()
+        
         # Summary
         print("\n" + "=" * 70)
         print("📊 TEST SUMMARY")
