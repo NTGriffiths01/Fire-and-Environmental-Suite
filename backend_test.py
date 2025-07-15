@@ -352,11 +352,20 @@ class BackendTester:
             
             inspector_headers = {"Authorization": f"Bearer {self.inspector_token}"}
             
+            # Get current inspector info to get the correct ID
+            user_response = self.session.get(f"{BASE_URL}/auth/me", headers=inspector_headers)
+            if user_response.status_code != 200:
+                self.log_result("Inspection Forms", False, "Could not get inspector info")
+                return False
+            
+            inspector_info = user_response.json()
+            inspector_id = inspector_info["id"]
+            
             # Test CREATE inspection (inspector)
             inspection_data = {
                 "template_id": self.template_id,
                 "facility_id": self.facility_id,
-                "inspector_id": "dummy",  # Will be overridden by the API
+                "inspector_id": inspector_id,  # Use actual inspector ID
                 "inspection_date": datetime.now().isoformat(),
                 "form_data": {
                     "alarm_functional": True,
