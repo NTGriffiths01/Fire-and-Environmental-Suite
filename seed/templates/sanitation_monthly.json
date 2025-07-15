@@ -1,0 +1,16 @@
+{
+  "$id": "sanitation_monthly",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Comprehensive Monthly Fire Safety, Sanitation & Equipment Inspection",
+  "type": "object",
+  "properties": {
+    "facility": { "type": "string" },
+    "sprinklerValvesPosition": { "type": "string", "enum": ["open", "closed", "unknown"] },
+    "exitLightsFunctional": { "type": "boolean" },
+    "firstAidKitSealed": { "type": "boolean" },
+    "kitchenClean": { "type": "boolean" },
+    "pestEvidence": { "type": "boolean" },
+    "comments": { "type": "string" }
+  },
+  "required": ["facility", "sprinklerValvesPosition"]
+}
