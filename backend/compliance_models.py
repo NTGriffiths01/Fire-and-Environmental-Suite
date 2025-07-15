@@ -44,7 +44,7 @@ class ComplianceSchedule(Base):
     frequency = Column(String(10), nullable=False)
     start_date = Column(Date)
     next_due_date = Column(Date)
-    assigned_to = Column(String(36), ForeignKey("users.id"))
+    assigned_to = Column(String(100))  # Changed to allow flexible user identification
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
