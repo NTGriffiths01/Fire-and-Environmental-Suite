@@ -114,7 +114,6 @@ class SmartFeaturesService:
             if not record or not record.notes:
                 return []
             
-            import json
             notes_data = json.loads(record.notes)
             return notes_data.get("comments", [])
             
