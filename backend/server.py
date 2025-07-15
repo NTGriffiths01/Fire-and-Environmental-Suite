@@ -21,6 +21,9 @@ from weasyprint import HTML, CSS
 from io import BytesIO
 import tempfile
 
+# Import SQLite API components
+from sqlite_api import sqlite_router
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
