@@ -583,5 +583,99 @@ export default function ComplianceDashboard() {
         </div>
       )}
     </div>
+
+    {/* Advanced Feature Modals */}
+    {selectedRecord && (
+      <>
+        {/* Document Management Modal */}
+        {activeModal === 'document' && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold text-blue-900">
+                    Document Management - {selectedRecord.function_name}
+                  </h3>
+                  <button
+                    onClick={closeModal}
+                    className="text-gray-500 hover:text-gray-700 text-2xl"
+                  >
+                    ×
+                  </button>
+                </div>
+                <div className="text-sm text-gray-600 mb-4">
+                  Facility: {selectedRecord.facility_name}
+                </div>
+                <DocumentUpload 
+                  recordId={selectedRecord.id}
+                  onUploadSuccess={() => {
+                    refetchDashboard();
+                    toast.success('Document uploaded successfully');
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Task Assignment Modal */}
+        {activeModal === 'task' && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold text-blue-900">
+                    Task Assignment - {selectedRecord.function_name}
+                  </h3>
+                  <button
+                    onClick={closeModal}
+                    className="text-gray-500 hover:text-gray-700 text-2xl"
+                  >
+                    ×
+                  </button>
+                </div>
+                <div className="text-sm text-gray-600 mb-4">
+                  Facility: {selectedRecord.facility_name}
+                </div>
+                <TaskAssignment 
+                  recordId={selectedRecord.id}
+                  currentAssignee={selectedRecord.assigned_to}
+                  onAssignmentChange={(newAssignee) => {
+                    refetchDashboard();
+                    toast.success(`Task assigned to ${newAssignee}`);
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Comment System Modal */}
+        {activeModal === 'comment' && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold text-blue-900">
+                    Comments - {selectedRecord.function_name}
+                  </h3>
+                  <button
+                    onClick={closeModal}
+                    className="text-gray-500 hover:text-gray-700 text-2xl"
+                  >
+                    ×
+                  </button>
+                </div>
+                <div className="text-sm text-gray-600 mb-4">
+                  Facility: {selectedRecord.facility_name}
+                </div>
+                <CommentSystem recordId={selectedRecord.id} />
+              </div>
+            </div>
+          </div>
+        )}
+      </>
+    )}
+  </div>
   );
 }
