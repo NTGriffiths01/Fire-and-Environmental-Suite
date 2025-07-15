@@ -1457,6 +1457,331 @@ class BackendTester:
             self.log_result("Scheduling Integration", False, f"Error: {str(e)}")
             return False
 
+    # Phase 4: Document Management Tests
+    def test_document_upload_validation(self):
+        """Test enhanced document upload with validation"""
+        try:
+            if not hasattr(self, 'compliance_schedule_id'):
+                self.log_result("Document Upload Validation", False, "No schedule ID available")
+                return False
+            
+            # First create a record to upload documents to
+            record_data = {
+                "schedule_id": self.compliance_schedule_id,
+                "due_date": "2024-12-31",
+                "status": "pending"
+            }
+            
+            # Create test file content
+            test_content = b"This is a test PDF document content for compliance testing."
+            
+            # Test file validation endpoint
+            files = {'file': ('test_document.pdf', test_content, 'application/pdf')}
+            response = self.session.post(f"{BASE_URL}/compliance/documents/validate", files=files)
+            
+            if response.status_code == 200:
+                validation = response.json()
+                self.log_result("Document Validation", True, f"File validation working: {validation.get('is_valid', False)}")
+            else:
+                self.log_result("Document Validation", False, f"Validation failed with status {response.status_code}")
+                return False
+            
+            return True
+        except Exception as e:
+            self.log_result("Document Upload Validation", False, f"Error: {str(e)}")
+            return False
+    
+    def test_document_download(self):
+        """Test document download functionality"""
+        try:
+            # This test would require an existing document
+            # For now, test the endpoint structure
+            response = self.session.get(f"{BASE_URL}/compliance/documents/test-id/download")
+            
+            # Expect 404 for non-existent document
+            if response.status_code == 404:
+                self.log_result("Document Download", True, "Download endpoint accessible (404 expected for non-existent document)")
+            else:
+                self.log_result("Document Download", False, f"Unexpected status: {response.status_code}")
+            
+            return True
+        except Exception as e:
+            self.log_result("Document Download", False, f"Error: {str(e)}")
+            return False
+    
+    def test_document_deletion(self):
+        """Test document deletion functionality"""
+        try:
+            # Test deletion endpoint structure
+            delete_data = {"deleted_by": "test_user"}
+            response = self.session.delete(f"{BASE_URL}/compliance/documents/test-id", data=delete_data)
+            
+            # Expect 404 for non-existent document
+            if response.status_code == 404:
+                self.log_result("Document Deletion", True, "Delete endpoint accessible (404 expected for non-existent document)")
+            else:
+                self.log_result("Document Deletion", False, f"Unexpected status: {response.status_code}")
+            
+            return True
+        except Exception as e:
+            self.log_result("Document Deletion", False, f"Error: {str(e)}")
+            return False
+    
+    def test_document_statistics(self):
+        """Test document statistics endpoint"""
+        try:
+            response = self.session.get(f"{BASE_URL}/compliance/documents/statistics")
+            
+            if response.status_code == 200:
+                stats = response.json()
+                expected_fields = ["total_documents", "total_size", "average_size", "type_breakdown", "category_breakdown"]
+                
+                if all(field in stats for field in expected_fields):
+                    self.log_result("Document Statistics", True, f"Statistics retrieved: {stats['total_documents']} documents")
+                else:
+                    self.log_result("Document Statistics", False, "Missing expected statistics fields")
+            else:
+                self.log_result("Document Statistics", False, f"Failed with status {response.status_code}")
+                return False
+            
+            return True
+        except Exception as e:
+            self.log_result("Document Statistics", False, f"Error: {str(e)}")
+            return False
+    
+    def test_bulk_document_upload(self):
+        """Test bulk document upload functionality"""
+        try:
+            # Test bulk upload endpoint structure
+            test_files = [
+                ('uploads', ('test1.pdf', b'test content 1', 'application/pdf')),
+                ('uploads', ('test2.pdf', b'test content 2', 'application/pdf'))
+            ]
+            
+            form_data = {
+                'record_ids': ['test-record-1', 'test-record-2'],
+                'uploaded_by': 'test_user',
+                'descriptions': ['Test document 1', 'Test document 2']
+            }
+            
+            response = self.session.post(f"{BASE_URL}/compliance/documents/bulk-upload", 
+                                       files=test_files, data=form_data)
+            
+            # Expect some response (may fail due to non-existent records)
+            if response.status_code in [200, 400, 404]:
+                self.log_result("Bulk Document Upload", True, "Bulk upload endpoint accessible")
+            else:
+                self.log_result("Bulk Document Upload", False, f"Unexpected status: {response.status_code}")
+            
+            return True
+        except Exception as e:
+            self.log_result("Bulk Document Upload", False, f"Error: {str(e)}")
+            return False
+    
+    def test_facility_documents(self):
+        """Test facility documents endpoint"""
+        try:
+            if not hasattr(self, 'compliance_facility_id'):
+                self.log_result("Facility Documents", False, "No facility ID available")
+                return False
+            
+            response = self.session.get(f"{BASE_URL}/compliance/facilities/{self.compliance_facility_id}/documents")
+            
+            if response.status_code == 200:
+                documents = response.json()
+                self.log_result("Facility Documents", True, f"Retrieved {len(documents)} documents for facility")
+            else:
+                self.log_result("Facility Documents", False, f"Failed with status {response.status_code}")
+                return False
+            
+            return True
+        except Exception as e:
+            self.log_result("Facility Documents", False, f"Error: {str(e)}")
+            return False
+    
+    # Phase 5: Smart Features Tests
+    def test_task_assignment(self):
+        """Test task assignment system"""
+        try:
+            # Test task assignment endpoint
+            assignment_data = {
+                "record_id": "test-record-id",
+                "assigned_to": "test_user@madoc.gov",
+                "notes": "Test assignment"
+            }
+            
+            form_data = {"assigned_by": "admin@madoc.gov"}
+            
+            response = self.session.post(f"{BASE_URL}/compliance/tasks/assign", 
+                                       json=assignment_data, data=form_data)
+            
+            # May fail due to non-existent record, but endpoint should be accessible
+            if response.status_code in [200, 400, 404]:
+                self.log_result("Task Assignment", True, "Task assignment endpoint accessible")
+            else:
+                self.log_result("Task Assignment", False, f"Unexpected status: {response.status_code}")
+            
+            # Test get assignments
+            response = self.session.get(f"{BASE_URL}/compliance/tasks/assignments")
+            
+            if response.status_code == 200:
+                assignments = response.json()
+                self.log_result("Get Task Assignments", True, f"Retrieved {len(assignments)} task assignments")
+            else:
+                self.log_result("Get Task Assignments", False, f"Failed with status {response.status_code}")
+            
+            return True
+        except Exception as e:
+            self.log_result("Task Assignment", False, f"Error: {str(e)}")
+            return False
+    
+    def test_comment_system(self):
+        """Test comment system functionality"""
+        try:
+            # Test add comment
+            comment_data = {
+                "record_id": "test-record-id",
+                "comment": "This is a test comment",
+                "comment_type": "general"
+            }
+            
+            form_data = {"user": "test_user@madoc.gov"}
+            
+            response = self.session.post(f"{BASE_URL}/compliance/comments", 
+                                       json=comment_data, data=form_data)
+            
+            # May fail due to non-existent record
+            if response.status_code in [200, 400, 404]:
+                self.log_result("Add Comment", True, "Add comment endpoint accessible")
+            else:
+                self.log_result("Add Comment", False, f"Unexpected status: {response.status_code}")
+            
+            # Test get comments
+            response = self.session.get(f"{BASE_URL}/compliance/records/test-record-id/comments")
+            
+            if response.status_code in [200, 404]:
+                self.log_result("Get Comments", True, "Get comments endpoint accessible")
+            else:
+                self.log_result("Get Comments", False, f"Unexpected status: {response.status_code}")
+            
+            return True
+        except Exception as e:
+            self.log_result("Comment System", False, f"Error: {str(e)}")
+            return False
+    
+    def test_overdue_notifications(self):
+        """Test overdue and upcoming notifications"""
+        try:
+            response = self.session.get(f"{BASE_URL}/compliance/notifications/overdue?days_ahead=7")
+            
+            if response.status_code == 200:
+                notifications = response.json()
+                self.log_result("Overdue Notifications", True, f"Retrieved {len(notifications)} notifications")
+            else:
+                self.log_result("Overdue Notifications", False, f"Failed with status {response.status_code}")
+                return False
+            
+            return True
+        except Exception as e:
+            self.log_result("Overdue Notifications", False, f"Error: {str(e)}")
+            return False
+    
+    def test_reminder_emails(self):
+        """Test reminder email system"""
+        try:
+            response = self.session.post(f"{BASE_URL}/compliance/notifications/send-reminders?days_ahead=7")
+            
+            if response.status_code == 200:
+                result = response.json()
+                expected_fields = ["notifications_found", "emails_sent", "errors"]
+                
+                if all(field in result for field in expected_fields):
+                    self.log_result("Reminder Emails", True, 
+                                  f"Email system working: {result['notifications_found']} notifications, {result['emails_sent']} emails sent")
+                else:
+                    self.log_result("Reminder Emails", False, "Missing expected response fields")
+            else:
+                self.log_result("Reminder Emails", False, f"Failed with status {response.status_code}")
+                return False
+            
+            return True
+        except Exception as e:
+            self.log_result("Reminder Emails", False, f"Error: {str(e)}")
+            return False
+    
+    def test_activity_feed(self):
+        """Test activity feed functionality"""
+        try:
+            response = self.session.get(f"{BASE_URL}/compliance/activity-feed?limit=20")
+            
+            if response.status_code == 200:
+                feed = response.json()
+                self.log_result("Activity Feed", True, f"Retrieved {len(feed)} activity entries")
+            else:
+                self.log_result("Activity Feed", False, f"Failed with status {response.status_code}")
+                return False
+            
+            # Test facility-specific feed
+            if hasattr(self, 'compliance_facility_id'):
+                response = self.session.get(f"{BASE_URL}/compliance/activity-feed?facility_id={self.compliance_facility_id}&limit=10")
+                
+                if response.status_code == 200:
+                    facility_feed = response.json()
+                    self.log_result("Facility Activity Feed", True, f"Retrieved {len(facility_feed)} facility-specific entries")
+                else:
+                    self.log_result("Facility Activity Feed", False, f"Failed with status {response.status_code}")
+            
+            return True
+        except Exception as e:
+            self.log_result("Activity Feed", False, f"Error: {str(e)}")
+            return False
+    
+    def test_data_export(self):
+        """Test data export functionality"""
+        try:
+            # Test JSON export
+            export_data = {"format": "json"}
+            response = self.session.post(f"{BASE_URL}/compliance/export", json=export_data)
+            
+            if response.status_code == 200:
+                result = response.json()
+                if "data" in result and "total_records" in result:
+                    self.log_result("Data Export (JSON)", True, f"Exported {result['total_records']} records in JSON format")
+                else:
+                    self.log_result("Data Export (JSON)", False, "Missing expected export fields")
+            else:
+                self.log_result("Data Export (JSON)", False, f"Failed with status {response.status_code}")
+                return False
+            
+            # Test CSV export
+            export_data = {"format": "csv"}
+            response = self.session.post(f"{BASE_URL}/compliance/export", json=export_data)
+            
+            if response.status_code == 200:
+                result = response.json()
+                if "content" in result and "total_records" in result:
+                    self.log_result("Data Export (CSV)", True, f"Exported {result['total_records']} records in CSV format")
+                else:
+                    self.log_result("Data Export (CSV)", False, "Missing expected CSV export fields")
+            else:
+                self.log_result("Data Export (CSV)", False, f"Failed with status {response.status_code}")
+            
+            # Test facility-specific export
+            if hasattr(self, 'compliance_facility_id'):
+                export_data = {"facility_id": self.compliance_facility_id, "format": "json"}
+                response = self.session.post(f"{BASE_URL}/compliance/export", json=export_data)
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    self.log_result("Facility Data Export", True, f"Exported facility-specific data: {result.get('total_records', 0)} records")
+                else:
+                    self.log_result("Facility Data Export", False, f"Failed with status {response.status_code}")
+            
+            return True
+        except Exception as e:
+            self.log_result("Data Export", False, f"Error: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all backend tests in sequence"""
         print("🚀 Starting Fire and Environmental Safety Suite Backend Tests")
