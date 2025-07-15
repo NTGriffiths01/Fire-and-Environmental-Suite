@@ -336,6 +336,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ TESTED: Compliance schedules endpoints working correctly. GET /api/compliance/facilities/{facility_id}/schedules returns 20 schedules per facility. Schedule structure includes facility_id, function_id, frequency, next_due_date. Frequency-based due date calculations working for all schedule types."
+      - working: true
+        agent: "testing"
+        comment: "✅ FIXED: Facility schedules endpoint now working without 500 errors! GET /api/compliance/facilities/{facility_id}/schedules successfully retrieves 20 schedules for facility. Fixed Pydantic validation error by ensuring start_date and next_due_date have default values when None in schedule_to_dict function. Schedule structure is correct with all expected fields: id, facility_id, function_id, frequency, start_date, next_due_date, assigned_to, is_active."
 
   - task: "Compliance Records Management"
     implemented: true
