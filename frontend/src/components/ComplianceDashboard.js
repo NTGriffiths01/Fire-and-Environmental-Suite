@@ -271,7 +271,7 @@ export default function ComplianceDashboard() {
             </p>
           </div>
           
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex items-center gap-4">
             {/* Facility Selector */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -307,6 +307,19 @@ export default function ComplianceDashboard() {
                   </option>
                 ))}
               </select>
+            </div>
+
+            {/* Notification Panel */}
+            <div className="flex items-end">
+              <NotificationPanel facilityId={selectedFacility} />
+            </div>
+
+            {/* Export Panel */}
+            <div className="flex items-end">
+              <ExportPanel 
+                facilityId={selectedFacility} 
+                facilityName={facilities?.find(f => f.id === selectedFacility)?.name}
+              />
             </div>
           </div>
         </div>
