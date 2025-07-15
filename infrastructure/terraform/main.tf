@@ -294,33 +294,41 @@ resource "aws_db_subnet_group" "main" {
   }
 }
 
-resource "aws_db_instance" "postgresql" {
-  identifier             = "${var.project_name}-db"
-  engine                 = "postgres"
-  engine_version         = "15.4"
-  instance_class         = "db.t3.micro"
-  allocated_storage      = 20
-  max_allocated_storage  = 100
-  storage_type           = "gp2"
-  storage_encrypted      = true
+# RDS (encrypted)
+resource "aws_kms_key" "rds" {
+  description = "KMS key for RDS encryption"
+}
 
-  db_name  = "fire_safety_suite"
-  username = "admin"
-  password = random_password.db_password.result
+resource "aws_db_instance" "postgres" {
+  identifier              = "madoc-fire-pg"
+  engine                  = "postgres"
+  engine_version          = "15.4"
+  instance_class          = "db.m6g.large"
+  allocated_storage       = 100
+  storage_encrypted       = true
+  kms_key_id              = aws_kms_key.rds.arn
+  publicly_accessible     = false
+  deletion_protection     = true
+  backup_retention_period = 30
+  username                = var.db_master_user
+  password                = var.db_master_pass
+  tags                    = local.tags
+}
 
-  vpc_security_group_ids = [aws_security_group.rds.id]
-  db_subnet_group_name   = aws_db_subnet_group.main.name
-
-  backup_retention_period = 7
-  backup_window          = "03:00-04:00"
-  maintenance_window     = "sun:04:00-sun:05:00"
-
-  skip_final_snapshot = true
-
-  tags = {
-    Name        = "${var.project_name}-db"
-    Environment = var.environment
+# WAFv2 ACL
+resource "aws_wafv2_web_acl" "api_acl" {
+  name  = "madoc-api-acl"
+  scope = "REGIONAL"
+  default_action { allow {} }
+  rule {
+    name     = "BlockSQLi"
+    priority = 1
+    statement { sqli_match_statement { field_to_match { all_query_arguments {} } text_transformations { priority = 0 type = "NONE" } } }
+    action   { block {} }
+    visibility_config { cloudwatch_metrics_enabled = true sampled_requests_enabled = true metric_name = "BlockSQLi" }
   }
+  visibility_config { cloudwatch_metrics_enabled = true sampled_requests_enabled = true metric_name = "madocAPI" }
+  tags = local.tags
 }
 
 resource "random_password" "db_password" {
