@@ -979,7 +979,7 @@ class BackendTester:
         self.test_deputy_user_creation()
         self.test_auth_me_endpoint()
         
-        # Core functionality tests
+        # Core functionality tests (MongoDB-based)
         self.test_facility_management()
         self.test_inspection_templates()
         self.test_inspection_forms()
@@ -989,6 +989,18 @@ class BackendTester:
         self.test_dashboard_statistics()
         self.test_audit_logging()
         self.test_role_based_access_control()
+        
+        # SQLite Database Integration Tests
+        print("\n" + "=" * 70)
+        print("🗄️  TESTING SQLITE DATABASE INTEGRATION")
+        print("=" * 70)
+        
+        self.test_sqlite_database_migration()
+        self.test_sqlite_user_management()
+        self.test_sqlite_template_system()
+        self.test_sqlite_inspection_workflow()
+        self.test_sqlite_corrective_actions()
+        self.test_sqlite_statistics()
         
         # Summary
         print("\n" + "=" * 70)
