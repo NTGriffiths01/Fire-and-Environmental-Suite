@@ -1038,6 +1038,121 @@ const PlaceholderContent = ({ title }) => (
   </div>
 );
 
+// Dynamic Inspection Form Content
+const DynamicInspectionContent = () => {
+  const [templates, setTemplates] = useState([]);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [showDynamicForm, setShowDynamicForm] = useState(false);
+
+  useEffect(() => {
+    fetchV2Templates();
+  }, []);
+
+  const fetchV2Templates = async () => {
+    try {
+      const response = await axios.get(`${API}/v2/templates`);
+      setTemplates(response.data);
+    } catch (error) {
+      console.error('Error fetching v2 templates:', error);
+      // Fallback to regular templates if v2 not available
+      try {
+        const fallbackResponse = await axios.get(`${API}/templates`);
+        setTemplates(fallbackResponse.data);
+      } catch (fallbackError) {
+        console.error('Error fetching fallback templates:', fallbackError);
+      }
+    }
+  };
+
+  const handleTemplateSelect = (template) => {
+    setSelectedTemplate(template);
+    setShowDynamicForm(true);
+  };
+
+  const handleFormSuccess = () => {
+    setShowDynamicForm(false);
+    setSelectedTemplate(null);
+    // Optionally refresh some data or show success message
+  };
+
+  return (
+    <div className="space-y-6">
+      {!showDynamicForm ? (
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h3 className="text-lg font-semibold text-blue-900 mb-4">Dynamic Inspection Forms</h3>
+          <p className="text-gray-600 mb-6">
+            Select a template to create a new inspection using our advanced dynamic form system.
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {templates.map((template) => (
+              <div 
+                key={template.id} 
+                className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => handleTemplateSelect(template)}
+              >
+                <h4 className="font-semibold text-blue-900 mb-2">{template.name}</h4>
+                <p className="text-gray-600 text-sm mb-4">
+                  {template.description || "Advanced inspection form with dynamic validation"}
+                </p>
+                <div className="flex justify-between items-center">
+                  <span className="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800">
+                    Dynamic Form
+                  </span>
+                  <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                    Use Template →
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {templates.length === 0 && (
+            <div className="text-center py-8">
+              <p className="text-gray-500">No templates available. Please create templates first.</p>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-semibold text-blue-900">
+              Dynamic Inspection Form
+            </h3>
+            <button 
+              onClick={() => setShowDynamicForm(false)}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              ← Back to Templates
+            </button>
+          </div>
+          
+          {/* This will be replaced with the actual DynamicInspectionForm component */}
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+            <p className="text-gray-500 mb-4">
+              Dynamic Inspection Form Component
+            </p>
+            <p className="text-sm text-gray-400">
+              Template: {selectedTemplate?.name}
+            </p>
+            <p className="text-sm text-gray-400">
+              Template ID: {selectedTemplate?.id}
+            </p>
+            <div className="mt-4">
+              <button 
+                onClick={handleFormSuccess}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              >
+                Simulate Form Success
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Main Application Component
 const MainApp = () => {
   const { user, logout } = useAuth();
