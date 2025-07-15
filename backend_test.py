@@ -1849,6 +1849,30 @@ class BackendTester:
         self.test_scheduling_enhanced_record_completion()
         self.test_scheduling_integration()
         
+        # Phase 4: Document Management Tests
+        print("\n" + "=" * 70)
+        print("📄 TESTING PHASE 4: DOCUMENT MANAGEMENT")
+        print("=" * 70)
+        
+        self.test_document_upload_validation()
+        self.test_document_download()
+        self.test_document_deletion()
+        self.test_document_statistics()
+        self.test_bulk_document_upload()
+        self.test_facility_documents()
+        
+        # Phase 5: Smart Features Tests
+        print("\n" + "=" * 70)
+        print("🧠 TESTING PHASE 5: SMART FEATURES")
+        print("=" * 70)
+        
+        self.test_task_assignment()
+        self.test_comment_system()
+        self.test_overdue_notifications()
+        self.test_reminder_emails()
+        self.test_activity_feed()
+        self.test_data_export()
+        
         # Summary
         print("\n" + "=" * 70)
         print("📊 TEST SUMMARY")
