@@ -189,12 +189,14 @@ class ComplianceSchedulingService:
                 schedule = self.db.query(ComplianceSchedule).filter(ComplianceSchedule.id == schedule_id).first()
                 
                 if schedule:
+                    # Ensure start_date is set first
+                    if schedule.start_date is None:
+                        schedule.start_date = date.today()
+                    
                     # Update frequency if provided
                     if "frequency" in update:
                         schedule.frequency = update["frequency"]
-                        # Use existing start_date or today if None
-                        start_date = schedule.start_date or date.today()
-                        schedule.next_due_date = calculate_next_due_date(start_date, schedule.frequency)
+                        schedule.next_due_date = calculate_next_due_date(schedule.start_date, schedule.frequency)
                     
                     # Update assigned_to if provided
                     if "assigned_to" in update:
