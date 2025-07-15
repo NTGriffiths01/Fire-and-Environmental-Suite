@@ -564,15 +564,18 @@ backend:
 
   - task: "Phase 5: Comment System"
     implemented: true
-    working: true
+    working: false
     file: "smart_features.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
       - working: true
         agent: "testing"
         comment: "✅ TESTED: Comment system endpoints accessible and functional. Get comments endpoint working correctly. Add comment endpoint has form validation requirements but core comment threading logic implemented. Comment history and note management working."
+      - working: false
+        agent: "testing"
+        comment: "❌ PARTIAL FIX: Comment system endpoint now accepts Form data correctly but has implementation bug. POST /api/compliance/comments returns 400 error: 'cannot access local variable json where it is not associated with a value'. Form data format working but code has variable scope issue in smart_features.py add_comment method."
 
   - task: "Phase 5: Overdue Notifications"
     implemented: true
