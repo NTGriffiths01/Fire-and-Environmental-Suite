@@ -315,6 +315,11 @@ export default function ComplianceDashboard() {
               <NotificationPanel facilityId={selectedFacility} />
             </div>
 
+            {/* Activity Feed */}
+            <div className="flex items-end">
+              <ActivityFeed facilityId={selectedFacility} />
+            </div>
+
             {/* Export Panel */}
             <div className="flex items-end">
               <ExportPanel 
