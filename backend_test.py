@@ -11,7 +11,7 @@ from datetime import datetime
 import uuid
 
 # Configuration
-BASE_URL = "https://e2b3ed4c-c62a-4948-9d9a-77995a1cc3c6.preview.emergentagent.com/api"
+BASE_URL = "https://c94b3df9-82b5-41bd-a80d-f821e8a6f0cc.preview.emergentagent.com/api"
 ADMIN_EMAIL = "admin@madoc.gov"
 ADMIN_PASSWORD = "admin123"
 
