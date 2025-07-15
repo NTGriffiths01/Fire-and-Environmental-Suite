@@ -8,6 +8,7 @@ from models import get_db
 from compliance_service import ComplianceService
 from compliance_scheduling import ComplianceSchedulingService
 from document_management import DocumentManagementService
+from smart_features import SmartFeaturesService
 from compliance_models import (
     ComplianceFacility, ComplianceFunction, ComplianceSchedule, 
     ComplianceRecord, ComplianceDocument, get_frequency_display
