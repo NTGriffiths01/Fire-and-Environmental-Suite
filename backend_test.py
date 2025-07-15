@@ -25,6 +25,9 @@ class BackendTester:
         self.facility_id = None
         self.template_id = None
         self.inspection_id = None
+        self.compliance_facility_id = None
+        self.compliance_function_id = None
+        self.compliance_schedule_id = None
         
     def log_result(self, test_name, success, message, details=None):
         """Log test result"""
