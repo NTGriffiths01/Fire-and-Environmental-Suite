@@ -336,29 +336,132 @@ def create_compliance_router():
         record_id: str,
         file: UploadFile = File(...),
         uploaded_by: str = Form(...),
+        description: str = Form(None),
         db: Session = Depends(get_db)
     ):
-        service = ComplianceService(db)
+        doc_service = DocumentManagementService(db)
         
         # Read file content
         file_content = await file.read()
         
-        # Upload document
-        document = service.upload_document(
+        # Upload document with enhanced validation
+        result = doc_service.upload_document(
             record_id=record_id,
             filename=file.filename,
             file_content=file_content,
             file_type=file.content_type,
-            uploaded_by=uploaded_by
+            uploaded_by=uploaded_by,
+            description=description
         )
         
-        return document_to_dict(document)
+        return DocumentUploadResponse(**result)
     
     @router.get("/records/{record_id}/documents")
     async def get_record_documents(record_id: str, db: Session = Depends(get_db)):
-        service = ComplianceService(db)
-        documents = service.get_documents_by_record(record_id)
-        return [document_to_dict(document) for document in documents]
+        doc_service = DocumentManagementService(db)
+        documents = doc_service.get_documents_by_record(record_id)
+        return [doc_service._document_to_dict(document) for document in documents]
+    
+    # **NEW PHASE 4: Enhanced Document Management Endpoints**
+    @router.get("/documents/{document_id}")
+    async def get_document_details(document_id: str, db: Session = Depends(get_db)):
+        """Get detailed information about a document"""
+        doc_service = DocumentManagementService(db)
+        document = doc_service.get_document_by_id(document_id)
+        if not document:
+            raise HTTPException(status_code=404, detail="Document not found")
+        return doc_service._document_to_dict(document)
+    
+    @router.get("/documents/{document_id}/download")
+    async def download_document(document_id: str, db: Session = Depends(get_db)):
+        """Download a document"""
+        doc_service = DocumentManagementService(db)
+        result = doc_service.get_document_content(document_id)
+        
+        if not result["success"]:
+            raise HTTPException(status_code=404, detail=result["error"])
+        
+        # Create streaming response
+        content = io.BytesIO(result["content"])
+        return StreamingResponse(
+            content,
+            media_type=result["file_type"],
+            headers={
+                "Content-Disposition": f"attachment; filename={result['filename']}",
+                "Content-Length": str(result["file_size"])
+            }
+        )
+    
+    @router.delete("/documents/{document_id}")
+    async def delete_document(
+        document_id: str,
+        deleted_by: str = Form(...),
+        db: Session = Depends(get_db)
+    ):
+        """Delete a document"""
+        doc_service = DocumentManagementService(db)
+        result = doc_service.delete_document(document_id, deleted_by)
+        
+        if not result["success"]:
+            raise HTTPException(status_code=404, detail=result["error"])
+        
+        return {"message": result["message"]}
+    
+    @router.get("/facilities/{facility_id}/documents")
+    async def get_facility_documents(facility_id: str, db: Session = Depends(get_db)):
+        """Get all documents for a facility"""
+        doc_service = DocumentManagementService(db)
+        documents = doc_service.get_documents_by_facility(facility_id)
+        return documents
+    
+    @router.get("/documents/statistics")
+    async def get_document_statistics(
+        facility_id: str = None,
+        db: Session = Depends(get_db)
+    ):
+        """Get document statistics"""
+        doc_service = DocumentManagementService(db)
+        stats = doc_service.get_document_statistics(facility_id)
+        return DocumentStatisticsResponse(**stats)
+    
+    @router.post("/documents/bulk-upload")
+    async def bulk_upload_documents(
+        uploads: List[UploadFile] = File(...),
+        record_ids: List[str] = Form(...),
+        uploaded_by: str = Form(...),
+        descriptions: List[str] = Form(None),
+        db: Session = Depends(get_db)
+    ):
+        """Bulk upload multiple documents"""
+        doc_service = DocumentManagementService(db)
+        
+        # Prepare upload data
+        upload_data = []
+        for i, file in enumerate(uploads):
+            file_content = await file.read()
+            upload_data.append({
+                "record_id": record_ids[i] if i < len(record_ids) else record_ids[0],
+                "filename": file.filename,
+                "file_content": file_content,
+                "file_type": file.content_type,
+                "uploaded_by": uploaded_by,
+                "description": descriptions[i] if descriptions and i < len(descriptions) else None
+            })
+        
+        result = doc_service.bulk_upload_documents(upload_data)
+        return BulkUploadResponse(**result)
+    
+    @router.post("/documents/validate")
+    async def validate_document(
+        file: UploadFile = File(...),
+        db: Session = Depends(get_db)
+    ):
+        """Validate a document before upload"""
+        doc_service = DocumentManagementService(db)
+        file_content = await file.read()
+        
+        validation = doc_service.validate_file(file.filename, file_content, file.content_type)
+        return validation
     
     # Dashboard endpoints
     @router.get("/facilities/{facility_id}/dashboard", response_model=FacilityDashboardResponse)
