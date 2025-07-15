@@ -270,6 +270,7 @@ const Navigation = ({ activeTab, setActiveTab, user }) => {
       return [
         ...baseItems,
         { id: 'inspections', label: 'All Inspections', icon: InspectionIcon },
+        { id: 'dynamic-forms', label: 'Dynamic Forms', icon: PlusIcon },
         { id: 'templates', label: 'Templates', icon: SettingsIcon },
         { id: 'users', label: 'User Management', icon: UsersIcon },
         { id: 'audit', label: 'Audit Logs', icon: AuditIcon },
@@ -279,6 +280,7 @@ const Navigation = ({ activeTab, setActiveTab, user }) => {
       return [
         ...baseItems,
         { id: 'new-inspection', label: 'New Inspection', icon: PlusIcon },
+        { id: 'dynamic-forms', label: 'Dynamic Forms', icon: PlusIcon },
         { id: 'my-inspections', label: 'My Inspections', icon: InspectionIcon },
         { id: 'reports', label: 'My Reports', icon: ReportIcon }
       ];
@@ -287,6 +289,7 @@ const Navigation = ({ activeTab, setActiveTab, user }) => {
         ...baseItems,
         { id: 'review-queue', label: 'Review Queue', icon: ReviewIcon },
         { id: 'inspections', label: 'All Inspections', icon: InspectionIcon },
+        { id: 'dynamic-forms', label: 'Dynamic Forms', icon: PlusIcon },
         { id: 'reports', label: 'Reports', icon: ReportIcon }
       ];
     }
