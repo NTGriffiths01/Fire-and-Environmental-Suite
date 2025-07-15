@@ -192,10 +192,9 @@ class ComplianceSchedulingService:
                     # Update frequency if provided
                     if "frequency" in update:
                         schedule.frequency = update["frequency"]
-                        schedule.next_due_date = calculate_next_due_date(
-                            schedule.start_date or date.today(), 
-                            schedule.frequency
-                        )
+                        # Use existing start_date or today if None
+                        start_date = schedule.start_date or date.today()
+                        schedule.next_due_date = calculate_next_due_date(start_date, schedule.frequency)
                     
                     # Update assigned_to if provided
                     if "assigned_to" in update:
@@ -204,6 +203,14 @@ class ComplianceSchedulingService:
                     # Update start_date if provided
                     if "start_date" in update:
                         schedule.start_date = update["start_date"]
+                        schedule.next_due_date = calculate_next_due_date(
+                            schedule.start_date, 
+                            schedule.frequency
+                        )
+                    
+                    # Ensure start_date is set if it was None
+                    if schedule.start_date is None:
+                        schedule.start_date = date.today()
                         schedule.next_due_date = calculate_next_due_date(
                             schedule.start_date, 
                             schedule.frequency
