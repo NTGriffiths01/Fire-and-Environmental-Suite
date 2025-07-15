@@ -435,9 +435,9 @@ backend:
 
   - task: "Phase 3: Scheduling Bulk Operations"
     implemented: true
-    working: false
+    working: true
     file: "compliance_scheduling.py"
-    stuck_count: 1
+    stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
@@ -447,6 +447,9 @@ backend:
       - working: false
         agent: "testing"
         comment: "❌ ENDPOINT ISSUE: Bulk schedule update endpoint still failing. Issue identified: endpoint expects Form data (schedule_ids, frequencies, assigned_tos) but schedules endpoint returns 500 Internal Server Error, preventing proper testing. Cannot retrieve schedules to test bulk update functionality. Need to fix /api/compliance/facilities/{facility_id}/schedules endpoint first."
+      - working: true
+        agent: "testing"
+        comment: "✅ FIXED: Bulk schedule update endpoint now working correctly! POST /api/compliance/scheduling/bulk-update successfully processes bulk updates using Form data. Fixed NoneType + timedelta errors by ensuring start_date defaults are set in compliance_scheduling.py. Bulk update completed: 2 updated, 0 errors. No NoneType + timedelta errors found. Form data format working: schedule_ids, frequencies, assigned_tos as form fields."
 
   - task: "Phase 3: Scheduling Next Due Date Logic"
     implemented: true
