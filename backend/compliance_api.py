@@ -174,13 +174,14 @@ def function_to_dict(function: ComplianceFunction) -> Dict[str, Any]:
     }
 
 def schedule_to_dict(schedule: ComplianceSchedule) -> Dict[str, Any]:
+    from datetime import date
     return {
         "id": schedule.id,
         "facility_id": schedule.facility_id,
         "function_id": schedule.function_id,
         "frequency": schedule.frequency,
-        "start_date": schedule.start_date,
-        "next_due_date": schedule.next_due_date,
+        "start_date": schedule.start_date or date.today(),  # Provide default if None
+        "next_due_date": schedule.next_due_date or date.today(),  # Provide default if None
         "assigned_to": schedule.assigned_to,
         "is_active": schedule.is_active
     }
