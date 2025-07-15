@@ -6,6 +6,7 @@ import TaskAssignment from './TaskAssignment';
 import CommentSystem from './CommentSystem';
 import NotificationPanel from './NotificationPanel';
 import ExportPanel from './ExportPanel';
+import ActivityFeed from './ActivityFeed';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
