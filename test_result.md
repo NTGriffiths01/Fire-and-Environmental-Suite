@@ -614,26 +614,17 @@ backend:
         comment: "✅ TESTED: Data export system fully functional. JSON export working (564 records), CSV export working (564 records), facility-specific export working (36 records). Export formats include comprehensive compliance data with facility_name, function_name, frequency, due_date, status, assigned_to, notes, has_documents fields."
 
 frontend:
-  - task: "Compliance Dashboard Component"
+  - task: "Advanced Frontend UI Components"
     implemented: true
-    working: true
+    working: false
     file: "components/ComplianceDashboard.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Implemented new Compliance Dashboard frontend component that replicates the physical wallboard system with facility selection, year selection, matrix table display, statistics panel, and row expansion functionality."
-      - working: false
-        agent: "testing"
-        comment: "❌ CRITICAL ISSUE CONFIRMED: Compliance Dashboard has major functionality issue. WORKING FEATURES: ✅ Navigation to Compliance Dashboard, ✅ Facility selection dropdown (17 facilities), ✅ Year selection dropdown, ✅ Matrix table display with quarterly headers (Q1-Q4), ✅ Statistics panel (Total Records, Completed, Completion Rate, Overdue), ✅ Row expansion functionality, ✅ Frequency labels (W, M, Q, SA, A), ✅ Citation references display, ✅ API integration with backend endpoints, ✅ Responsive design. CRITICAL ISSUE: ❌ ALL status cells in the matrix show hourglass (⏳) icons for EVERY month, violating the core requirement that tasks should only show status indicators for months when they're actually due based on frequency. Weekly tasks should show weekly, Monthly tasks monthly, Quarterly tasks every 3 months, etc. Currently the system shows pending status for all months regardless of task frequency, making the compliance tracking inaccurate and not reflecting actual compliance schedules."
-      - working: true
-        agent: "main"
-        comment: "CRITICAL FIX IMPLEMENTED: Fixed the major frequency-based logic issue. Implemented proper getScheduledMonths() function and processedDashboardData logic to only show status indicators for months when tasks are actually due based on their frequency. Added proper empty cell styling for non-scheduled months. Enhanced expanded view to show only 'Scheduled Months' instead of all months."
-      - working: true
-        agent: "testing"
-        comment: "✅ CRITICAL FIX VERIFIED: Comprehensive testing confirms the frequency-based status display is now working correctly. TESTED SUCCESSFULLY: ✅ Weekly (W) tasks show 12 status cells (all months), ✅ Monthly (M) tasks show 12 status cells (all months), ✅ Annual (A) tasks show 1 status cell + 11 empty gray cells, ✅ Quarterly (Q) tasks show 4 status cells + 8 empty gray cells, ✅ Empty cells properly styled as gray with no content (no hourglasses), ✅ Status cells show proper hourglass (⏳) icons for pending tasks, ✅ Facility selection working (22 facilities), ✅ Year selection working, ✅ Statistics panel displaying correctly, ✅ Matrix table structure with Q1-Q4 headers and month labels, ✅ Row expansion functionality working, ✅ Expanded view shows 'Scheduled Months' section correctly, ✅ Different facilities maintain frequency logic, ✅ All navigation and API integration working. The core issue where ALL months showed hourglasses has been completely resolved. The dashboard now accurately reflects actual compliance schedules based on task frequency."
+        comment: "Implemented comprehensive frontend UI components for advanced compliance features. Created 5 new components: DocumentUpload.js (file upload/download/delete with validation), TaskAssignment.js (user assignment with notes), CommentSystem.js (threaded comments with types), NotificationPanel.js (overdue/urgent notifications with bell icon), ExportPanel.js (JSON/CSV/Excel export), and ActivityFeed.js (real-time activity stream). Integrated all components into enhanced ComplianceDashboard.js with modal system for advanced actions. Added clickable status cells, action buttons in expanded rows, and header controls for notifications, activity feed, and export. Features include drag-and-drop file upload, assignment history, comment threading, urgency-based notifications, and comprehensive data export capabilities."
 
   - task: "Authentication UI"
     implemented: true
