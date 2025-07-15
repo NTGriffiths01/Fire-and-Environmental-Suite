@@ -436,8 +436,8 @@ class BackendTester:
                 "comments": "Inspection completed thoroughly. All safety systems are functioning properly."
             }
             
-            response = self.session.post(f"{BASE_URL}/inspections/{self.inspection_id}/review", 
-                                       data=review_form_data, headers=deputy_headers)
+            response = self.session.post(f"{BASE_URL}/inspections/{self.inspection_id}/review?action=approve&comments=Inspection completed thoroughly. All safety systems are functioning properly.", 
+                                       headers=deputy_headers)
             if response.status_code == 200:
                 self.log_result("Approve Inspection", True, "Inspection approved successfully")
             else:
