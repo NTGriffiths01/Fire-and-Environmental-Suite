@@ -103,6 +103,8 @@ export default function ComplianceDashboard() {
   const [selectedFacility, setSelectedFacility] = useState(null);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [expandedRows, setExpandedRows] = useState(new Set());
+  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [activeModal, setActiveModal] = useState(null); // 'document', 'task', 'comment'
 
   // Fetch facilities
   const { data: facilities, isLoading: facilitiesLoading } = useQuery({
