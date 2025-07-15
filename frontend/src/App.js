@@ -1224,6 +1224,8 @@ const MainApp = () => {
     switch (activeTab) {
       case 'dashboard':
         return <DashboardContent user={user} onQuickAction={handleQuickAction} />;
+      case 'compliance-dashboard':
+        return <ComplianceDashboard />;
       case 'inspections':
       case 'my-inspections':
         return <InspectionsContent onViewInspection={handleViewInspection} />;
