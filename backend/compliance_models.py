@@ -81,7 +81,7 @@ class ComplianceDocument(Base):
     file_size = Column(Integer)
     file_path = Column(String(500))
     base64_content = Column(Text)
-    uploaded_by = Column(String(36), ForeignKey("users.id"))
+    uploaded_by = Column(String(100))  # Changed to allow flexible user identification
     uploaded_at = Column(DateTime, default=datetime.utcnow)
     
     # Relationships
