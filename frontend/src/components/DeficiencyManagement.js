@@ -76,8 +76,11 @@ const DeficiencyManagement = ({ inspection, onClose }) => {
         severity: 'medium',
         corrective_action: '',
         target_completion_date: '',
-        violation_code_id: ''
+        violation_code_id: '',
+        incident_report_number: '',
+        recommendations: ''
       });
+      setRecommendations([]);
     },
     onError: (error) => {
       toast.error(error.message);
