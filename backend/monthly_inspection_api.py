@@ -438,7 +438,7 @@ def create_monthly_inspection_router():
 
     # **System Management Endpoints**
 
-    @router.post("/monthly-inspections/auto-generate")
+    @router.post("/auto-generate")
     async def auto_generate_monthly_inspections(
         target_year: int = Form(None),
         target_month: int = Form(None),
