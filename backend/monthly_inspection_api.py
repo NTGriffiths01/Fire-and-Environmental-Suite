@@ -478,21 +478,6 @@ def create_monthly_inspection_router():
             logger.error(f"Error auto-generating inspections: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
 
-    @router.get("/statistics")
-    async def get_inspection_statistics(
-        facility_id: str = None,
-        year: int = None,
-        db: Session = Depends(get_db)
-    ):
-        """Get inspection statistics"""
-        try:
-            service = MonthlyInspectionService(db)
-            stats = service.get_inspection_statistics(facility_id, year)
-            return InspectionStatisticsResponse(**stats)
-        except Exception as e:
-            logger.error(f"Error getting inspection statistics: {str(e)}")
-            raise HTTPException(status_code=500, detail=str(e))
-
     @router.post("/violation-codes/seed")
     async def seed_violation_codes(db: Session = Depends(get_db)):
         """Seed the database with default violation codes"""
