@@ -422,15 +422,7 @@ const DeficiencyManagement = ({ inspection, onClose }) => {
                   </label>
                   <select
                     value={newDeficiency.violation_code_id}
-                    onChange={(e) => {
-                      const selectedCode = violationCodes?.find(c => c.id === e.target.value);
-                      setNewDeficiency(prev => ({ 
-                        ...prev, 
-                        violation_code_id: e.target.value,
-                        citation_code: selectedCode?.code_number || '',
-                        citation_section: selectedCode?.section || ''
-                      }));
-                    }}
+                    onChange={(e) => handleViolationCodeChange(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Select violation code...</option>
@@ -444,6 +436,28 @@ const DeficiencyManagement = ({ inspection, onClose }) => {
                       </optgroup>
                     ))}
                   </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Citation Code & Section
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      value={newDeficiency.citation_code}
+                      onChange={(e) => setNewDeficiency(prev => ({ ...prev, citation_code: e.target.value }))}
+                      placeholder="Citation code"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <input
+                      type="text"
+                      value={newDeficiency.citation_section}
+                      onChange={(e) => setNewDeficiency(prev => ({ ...prev, citation_section: e.target.value }))}
+                      placeholder="Section"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
                 </div>
 
                 <div>
