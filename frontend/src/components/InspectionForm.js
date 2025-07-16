@@ -7,32 +7,60 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const InspectionForm = ({ inspection, onClose, onSave }) => {
   const [formData, setFormData] = useState({
     fire_safety: {
-      sprinkler_system: '',
-      fire_alarms: '',
-      fire_extinguishers: '',
-      emergency_exits: '',
-      fire_doors: '',
-      smoking_areas: '',
-      electrical_systems: '',
-      kitchen_equipment: '',
-      storage_areas: '',
-      maintenance_areas: ''
+      // Fire Safety Section - Verbatim from Massachusetts DOC Form
+      fire_alarm_system_tested: '',
+      sprinkler_system_operational: '',
+      fire_extinguishers_charged_accessible: '',
+      emergency_exits_unlocked_unobstructed: '',
+      exit_signs_illuminated: '',
+      emergency_lighting_functional: '',
+      fire_doors_properly_closed: '',
+      smoke_dampers_operational: '',
+      fire_pump_operational: '',
+      standpipe_system_operational: '',
+      fire_department_connection_accessible: '',
+      hot_work_permits_current: '',
+      flammable_liquids_properly_stored: '',
+      electrical_panels_accessible: '',
+      extension_cords_inspected: '',
+      kitchen_hood_suppression_system: '',
+      smoking_policy_enforced: '',
+      fire_safety_training_current: '',
+      fire_drill_conducted_monthly: '',
+      fire_safety_equipment_inspected: ''
     },
     environmental_health: {
-      water_supply: '',
-      waste_management: '',
-      ventilation: '',
-      pest_control: '',
-      food_service: '',
-      sanitation: '',
-      hazardous_materials: '',
-      air_quality: '',
-      temperature_control: '',
-      lighting: ''
+      // Environmental Health Section - Verbatim from Massachusetts DOC Form  
+      potable_water_supply_adequate: '',
+      water_temperature_appropriate: '',
+      sewage_system_functioning: '',
+      solid_waste_properly_disposed: '',
+      hazardous_waste_properly_stored: '',
+      pest_control_program_effective: '',
+      food_service_areas_sanitary: '',
+      food_storage_temperature_controlled: '',
+      dishwashing_facilities_adequate: '',
+      ventilation_systems_operational: '',
+      air_quality_acceptable: '',
+      temperature_control_adequate: '',
+      lighting_levels_adequate: '',
+      noise_levels_acceptable: '',
+      laundry_facilities_sanitary: '',
+      medical_waste_properly_handled: '',
+      chemical_storage_compliant: '',
+      plumbing_fixtures_operational: '',
+      shower_facilities_adequate: '',
+      toilet_facilities_adequate: ''
     },
     general_observations: '',
     inspector_notes: '',
-    inspection_date: new Date().toISOString().split('T')[0]
+    inspection_date: new Date().toISOString().split('T')[0],
+    inspector_name: '',
+    inspector_title: '',
+    facility_representative: '',
+    weather_conditions: '',
+    inspection_time_start: '',
+    inspection_time_end: ''
   });
 
   const queryClient = useQueryClient();
