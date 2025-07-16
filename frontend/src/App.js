@@ -1174,6 +1174,7 @@ const MainApp = () => {
     switch (activeTab) {
       case 'dashboard': return 'Dashboard';
       case 'compliance-dashboard': return 'Compliance Dashboard';
+      case 'monthly-inspections': return 'Monthly Inspections';
       case 'inspections': return 'All Inspections';
       case 'new-inspection': return 'New Inspection';
       case 'my-inspections': return 'My Inspections';
@@ -1191,6 +1192,7 @@ const MainApp = () => {
     switch (activeTab) {
       case 'dashboard': return 'System overview and quick actions';
       case 'compliance-dashboard': return 'Environmental safety, inspections, and certification timeline tracking';
+      case 'monthly-inspections': return 'Comprehensive monthly inspections with electronic signatures and deficiency tracking';
       case 'inspections': return 'View and manage all inspections';
       case 'new-inspection': return 'Create a new fire safety inspection';
       case 'my-inspections': return 'View your inspection history';
