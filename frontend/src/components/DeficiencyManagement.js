@@ -15,8 +15,12 @@ const DeficiencyManagement = ({ inspection, onClose }) => {
     severity: 'medium',
     corrective_action: '',
     target_completion_date: '',
-    violation_code_id: ''
+    violation_code_id: '',
+    incident_report_number: '', // Will be auto-generated
+    recommendations: '' // Will be auto-generated based on description
   });
+  const [recommendations, setRecommendations] = useState([]);
+  const [isGeneratingRecommendations, setIsGeneratingRecommendations] = useState(false);
   const queryClient = useQueryClient();
 
   // Get deficiencies for this inspection
