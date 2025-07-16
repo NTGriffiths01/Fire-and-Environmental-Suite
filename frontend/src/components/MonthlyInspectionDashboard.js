@@ -170,26 +170,26 @@ const MonthlyInspectionDashboard = () => {
         
         {/* Header */}
         <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-blue-900 mb-2">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div className="text-center lg:text-left">
+              <h1 className="text-4xl font-bold text-blue-900 mb-3">
                 Monthly Inspection System
               </h1>
-              <p className="text-gray-600">
+              <p className="text-xl text-gray-600">
                 Comprehensive monthly inspections with electronic signatures and deficiency tracking
               </p>
             </div>
             
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center gap-6">
               {/* Facility Selector */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+              <div className="w-full sm:w-auto">
+                <label className="block text-lg font-medium text-gray-700 mb-3 text-center sm:text-left">
                   Select Facility
                 </label>
                 <select
                   value={selectedFacility || ''}
                   onChange={(e) => setSelectedFacility(e.target.value)}
-                  className="border border-gray-300 rounded-md px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 touch-manipulation"
                 >
                   <option value="">Choose a facility...</option>
                   {facilities?.map((facility) => (
@@ -201,14 +201,14 @@ const MonthlyInspectionDashboard = () => {
               </div>
 
               {/* Year Selector */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+              <div className="w-full sm:w-auto">
+                <label className="block text-lg font-medium text-gray-700 mb-3 text-center sm:text-left">
                   Year
                 </label>
                 <select
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                  className="border border-gray-300 rounded-md px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 touch-manipulation"
                 >
                   {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i).map(year => (
                     <option key={year} value={year}>
@@ -219,11 +219,11 @@ const MonthlyInspectionDashboard = () => {
               </div>
 
               {/* Auto-generate Button */}
-              <div className="flex items-end">
+              <div className="flex items-end w-full sm:w-auto">
                 <button
                   onClick={() => autoGenerateMutation.mutate()}
                   disabled={autoGenerateMutation.isLoading}
-                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+                  className="w-full sm:w-auto px-6 py-3 text-lg bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 touch-manipulation transition-colors shadow-lg"
                 >
                   {autoGenerateMutation.isLoading ? 'Generating...' : '🔄 Auto-Generate'}
                 </button>
