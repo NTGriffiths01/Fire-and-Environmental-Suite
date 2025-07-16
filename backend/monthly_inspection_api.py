@@ -296,7 +296,7 @@ def create_monthly_inspection_router():
             logger.error(f"Error adding deficiency: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
 
-    @router.get("/monthly-inspections/{inspection_id}/deficiencies")
+    @router.get("/{inspection_id}/deficiencies")
     async def get_inspection_deficiencies(inspection_id: str, db: Session = Depends(get_db)):
         """Get all deficiencies for an inspection"""
         try:
