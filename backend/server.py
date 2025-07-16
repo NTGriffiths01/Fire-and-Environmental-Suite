@@ -24,6 +24,7 @@ import tempfile
 # Import SQLite API components
 from sqlite_api import sqlite_router
 from compliance_api import compliance_router
+from monthly_inspection_api import monthly_inspection_router
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
