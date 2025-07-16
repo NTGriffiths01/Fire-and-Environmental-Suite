@@ -862,6 +862,7 @@ async def root():
 app.include_router(api_router)
 app.include_router(sqlite_router, prefix="/api/v2", tags=["SQLite Database"])
 app.include_router(compliance_router, prefix="/api/compliance", tags=["Compliance Tracking"])
+app.include_router(monthly_inspection_router, prefix="/api/monthly-inspections", tags=["monthly-inspections"])
 
 # CORS middleware
 app.add_middleware(
