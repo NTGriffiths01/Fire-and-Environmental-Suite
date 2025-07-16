@@ -178,7 +178,7 @@ def create_monthly_inspection_router():
             logger.error(f"Error getting monthly inspection: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
 
-    @router.get("/monthly-inspections/facility/{facility_id}")
+    @router.get("/facility/{facility_id}")
     async def get_monthly_inspections_by_facility(
         facility_id: str, 
         year: int = None, 
