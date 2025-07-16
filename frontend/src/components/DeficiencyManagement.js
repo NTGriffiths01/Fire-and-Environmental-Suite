@@ -613,6 +613,11 @@ const DeficiencyManagement = ({ inspection, onClose }) => {
                           <div className="text-sm text-gray-600">
                             {deficiency.area_type.replace('_', ' ')} • {deficiency.location}
                           </div>
+                          {deficiency.incident_report_number && (
+                            <div className="text-sm font-medium text-blue-600">
+                              Incident Report: {deficiency.incident_report_number}
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -626,12 +631,19 @@ const DeficiencyManagement = ({ inspection, onClose }) => {
                     </div>
 
                     {deficiency.citation_code && (
-                      <div className="mb-3">
-                        <span className="text-sm font-medium text-gray-700">Citation: </span>
-                        <span className="text-sm text-gray-600">{deficiency.citation_code}</span>
+                      <div className="mb-3 bg-blue-50 p-3 rounded-md">
+                        <span className="text-sm font-medium text-blue-900">Code Requirement: </span>
+                        <span className="text-sm text-blue-800">{deficiency.citation_code}</span>
                         {deficiency.citation_section && (
-                          <span className="text-sm text-gray-600"> - {deficiency.citation_section}</span>
+                          <span className="text-sm text-blue-800"> - {deficiency.citation_section}</span>
                         )}
+                      </div>
+                    )}
+
+                    {deficiency.recommendations && (
+                      <div className="mb-3 bg-green-50 p-3 rounded-md">
+                        <span className="text-sm font-medium text-green-900">Recommendations: </span>
+                        <span className="text-sm text-green-800">{deficiency.recommendations}</span>
                       </div>
                     )}
 
