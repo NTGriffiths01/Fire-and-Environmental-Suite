@@ -255,7 +255,7 @@ def create_monthly_inspection_router():
 
     # **Deficiency Management Endpoints**
 
-    @router.post("/monthly-inspections/{inspection_id}/deficiencies")
+    @router.post("/{inspection_id}/deficiencies")
     async def add_inspection_deficiency(
         inspection_id: str,
         area_type: str = Form(...),
