@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends, Form, File, UploadFile
 from sqlalchemy.orm import Session
-from database_service import get_db
+from models import get_db
 from monthly_inspection_service import MonthlyInspectionService
 from violation_codes_service import ViolationCodesService
 from pydantic import BaseModel
