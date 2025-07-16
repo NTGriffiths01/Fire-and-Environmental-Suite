@@ -1232,6 +1232,8 @@ const MainApp = () => {
         return <DashboardContent user={user} onQuickAction={handleQuickAction} />;
       case 'compliance-dashboard':
         return <ComplianceDashboard />;
+      case 'monthly-inspections':
+        return <MonthlyInspectionDashboard />;
       case 'inspections':
       case 'my-inspections':
         return <InspectionsContent onViewInspection={handleViewInspection} />;
