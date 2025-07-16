@@ -574,7 +574,23 @@ const DeficiencyManagement = ({ inspection, onClose }) => {
 
               <div className="mt-4 flex justify-end space-x-2">
                 <button
-                  onClick={() => setShowAddForm(false)}
+                  onClick={() => {
+                    setShowAddForm(false);
+                    setNewDeficiency({
+                      area_type: '',
+                      description: '',
+                      location: '',
+                      citation_code: '',
+                      citation_section: '',
+                      severity: 'medium',
+                      corrective_action: '',
+                      target_completion_date: '',
+                      violation_code_id: '',
+                      incident_report_number: '',
+                      recommendations: ''
+                    });
+                    setRecommendations([]);
+                  }}
                   className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
                 >
                   Cancel
