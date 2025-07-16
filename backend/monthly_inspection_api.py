@@ -213,7 +213,7 @@ def create_monthly_inspection_router():
             logger.error(f"Error updating form data: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
 
-    @router.post("/monthly-inspections/{inspection_id}/signature")
+    @router.post("/{inspection_id}/signature")
     async def add_inspection_signature(
         inspection_id: str,
         signature_type: str = Form(...),
