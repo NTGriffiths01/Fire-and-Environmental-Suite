@@ -193,7 +193,7 @@ def create_monthly_inspection_router():
             logger.error(f"Error getting monthly inspections: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
 
-    @router.put("/monthly-inspections/{inspection_id}/form-data")
+    @router.put("/{inspection_id}/form-data")
     async def update_inspection_form_data(
         inspection_id: str,
         form_data: str = Form(...),
