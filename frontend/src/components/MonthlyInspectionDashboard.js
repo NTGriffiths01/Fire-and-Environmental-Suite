@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import InspectionForm from './InspectionForm';
+import DigitalSignature from './DigitalSignature';
+import DeficiencyManagement from './DeficiencyManagement';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
