@@ -463,7 +463,7 @@ def create_monthly_inspection_router():
             logger.error(f"Error auto-generating inspections: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
 
-    @router.get("/monthly-inspections/statistics")
+    @router.get("/statistics")
     async def get_inspection_statistics(
         facility_id: str = None,
         year: int = None,
