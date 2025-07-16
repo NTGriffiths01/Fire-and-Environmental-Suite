@@ -241,6 +241,21 @@ const DeficiencyManagement = ({ inspection, onClose }) => {
     }, 1000);
   };
 
+  const handleViolationCodeChange = (codeId) => {
+    const selectedCode = violationCodes?.find(c => c.id === codeId);
+    setNewDeficiency(prev => ({ 
+      ...prev, 
+      violation_code_id: codeId,
+      citation_code: selectedCode?.code_number || '',
+      citation_section: selectedCode?.section || ''
+    }));
+    
+    // Regenerate recommendations with new violation code
+    if (newDeficiency.description) {
+      generateRecommendations(newDeficiency.description, codeId);
+    }
+  };
+
   const handleAddDeficiency = () => {
     if (!newDeficiency.area_type || !newDeficiency.description) {
       toast.error('Please fill in required fields');
