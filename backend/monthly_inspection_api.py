@@ -238,7 +238,7 @@ def create_monthly_inspection_router():
             logger.error(f"Error adding signature: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
 
-    @router.get("/monthly-inspections/{inspection_id}/signatures")
+    @router.get("/{inspection_id}/signatures")
     async def get_inspection_signatures(inspection_id: str, db: Session = Depends(get_db)):
         """Get all signatures for an inspection"""
         try:
