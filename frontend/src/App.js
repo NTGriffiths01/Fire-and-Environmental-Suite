@@ -272,6 +272,7 @@ const Navigation = ({ activeTab, setActiveTab, user }) => {
       return [
         ...baseItems,
         { id: 'compliance-dashboard', label: 'Compliance Dashboard', icon: ReviewIcon },
+        { id: 'monthly-inspections', label: 'Monthly Inspections', icon: InspectionIcon },
         { id: 'inspections', label: 'All Inspections', icon: InspectionIcon },
         { id: 'dynamic-forms', label: 'Dynamic Forms', icon: PlusIcon },
         { id: 'templates', label: 'Templates', icon: SettingsIcon },
@@ -283,6 +284,7 @@ const Navigation = ({ activeTab, setActiveTab, user }) => {
       return [
         ...baseItems,
         { id: 'compliance-dashboard', label: 'Compliance Dashboard', icon: ReviewIcon },
+        { id: 'monthly-inspections', label: 'Monthly Inspections', icon: InspectionIcon },
         { id: 'new-inspection', label: 'New Inspection', icon: PlusIcon },
         { id: 'dynamic-forms', label: 'Dynamic Forms', icon: PlusIcon },
         { id: 'my-inspections', label: 'My Inspections', icon: InspectionIcon },
@@ -292,6 +294,7 @@ const Navigation = ({ activeTab, setActiveTab, user }) => {
       return [
         ...baseItems,
         { id: 'compliance-dashboard', label: 'Compliance Dashboard', icon: ReviewIcon },
+        { id: 'monthly-inspections', label: 'Monthly Inspections', icon: InspectionIcon },
         { id: 'review-queue', label: 'Review Queue', icon: ReviewIcon },
         { id: 'inspections', label: 'All Inspections', icon: InspectionIcon },
         { id: 'dynamic-forms', label: 'Dynamic Forms', icon: PlusIcon },
