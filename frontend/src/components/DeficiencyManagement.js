@@ -112,12 +112,149 @@ const DeficiencyManagement = ({ inspection, onClose }) => {
     },
   });
 
-  const handleAddDeficiency = () => {
-    if (!newDeficiency.area_type || !newDeficiency.description) {
-      toast.error('Please fill in required fields');
+  // Generate incident report number automatically
+  const generateIncidentReportNumber = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const timestamp = Date.now().toString().slice(-4); // Last 4 digits of timestamp
+    return `IR-${year}${month}${day}-${timestamp}`;
+  };
+
+  // Generate recommendations based on description
+  const generateRecommendations = async (description, violationCode) => {
+    if (!description || description.length < 10) {
+      setRecommendations([]);
       return;
     }
-    addDeficiencyMutation.mutate(newDeficiency);
+
+    setIsGeneratingRecommendations(true);
+    
+    try {
+      // Create recommendations based on common patterns
+      const commonRecommendations = {
+        'fire': [
+          'Ensure all fire safety equipment is properly maintained and inspected',
+          'Conduct immediate fire safety training for all personnel',
+          'Review and update fire evacuation procedures',
+          'Install additional fire detection equipment if necessary'
+        ],
+        'exit': [
+          'Ensure all emergency exits are clearly marked and unobstructed',
+          'Test emergency lighting systems monthly',
+          'Conduct emergency evacuation drills regularly',
+          'Install backup power for emergency systems'
+        ],
+        'alarm': [
+          'Test fire alarm systems monthly and document results',
+          'Ensure alarm systems are audible throughout the facility',
+          'Maintain backup power systems for alarms',
+          'Train staff on alarm system operation'
+        ],
+        'sprinkler': [
+          'Inspect sprinkler heads for obstructions and damage',
+          'Test sprinkler system pressure monthly',
+          'Ensure water supply is adequate for system operation',
+          'Maintain clear access to sprinkler controls'
+        ],
+        'extinguisher': [
+          'Inspect fire extinguishers monthly and recharge as needed',
+          'Ensure extinguishers are properly mounted and accessible',
+          'Train staff on proper fire extinguisher use',
+          'Replace expired or damaged extinguishers immediately'
+        ],
+        'water': [
+          'Test water quality regularly and document results',
+          'Ensure adequate water pressure throughout facility',
+          'Maintain plumbing systems to prevent contamination',
+          'Install backflow prevention devices where required'
+        ],
+        'waste': [
+          'Implement proper waste segregation procedures',
+          'Ensure regular waste collection and disposal',
+          'Train staff on hazardous waste handling',
+          'Maintain clean storage areas for waste containers'
+        ],
+        'ventilation': [
+          'Inspect and clean ventilation systems regularly',
+          'Ensure adequate air exchange rates',
+          'Replace filters according to manufacturer specifications',
+          'Monitor air quality and adjust systems as needed'
+        ],
+        'electrical': [
+          'Inspect electrical panels and ensure proper labeling',
+          'Test GFCI outlets monthly',
+          'Ensure electrical panels are accessible and unobstructed',
+          'Replace damaged electrical equipment immediately'
+        ],
+        'pest': [
+          'Implement integrated pest management program',
+          'Seal entry points to prevent pest infiltration',
+          'Remove food sources and standing water',
+          'Schedule regular pest control inspections'
+        ]
+      };
+
+      const desc = description.toLowerCase();
+      let suggestedRecommendations = [];
+
+      // Match description with common patterns
+      Object.keys(commonRecommendations).forEach(key => {
+        if (desc.includes(key)) {
+          suggestedRecommendations.push(...commonRecommendations[key]);
+        }
+      });
+
+      // Add violation code specific recommendations
+      if (violationCode) {
+        const selectedCode = violationCodes?.find(c => c.id === violationCode);
+        if (selectedCode) {
+          suggestedRecommendations.push(
+            `Ensure compliance with ${selectedCode.code_type} ${selectedCode.code_number}: ${selectedCode.title}`,
+            `Review ${selectedCode.code_type} requirements for ${selectedCode.area_category} standards`,
+            `Implement corrective actions in accordance with ${selectedCode.code_type} regulations`
+          );
+        }
+      }
+
+      // Remove duplicates and limit to 6 recommendations
+      const uniqueRecommendations = [...new Set(suggestedRecommendations)].slice(0, 6);
+      setRecommendations(uniqueRecommendations);
+      
+    } catch (error) {
+      console.error('Error generating recommendations:', error);
+      setRecommendations([]);
+    } finally {
+      setIsGeneratingRecommendations(false);
+    }
+  };
+
+  // Handle description change with recommendation generation
+  const handleDescriptionChange = (value) => {
+    setNewDeficiency(prev => ({ ...prev, description: value }));
+    
+    // Debounce recommendation generation
+    clearTimeout(window.recommendationTimeout);
+    window.recommendationTimeout = setTimeout(() => {
+      generateRecommendations(value, newDeficiency.violation_code_id);
+    }, 1000);
+  };
+
+  // Handle violation code change
+  const handleViolationCodeChange = (codeId) => {
+    const selectedCode = violationCodes?.find(c => c.id === codeId);
+    setNewDeficiency(prev => ({ 
+      ...prev, 
+      violation_code_id: codeId,
+      citation_code: selectedCode?.code_number || '',
+      citation_section: selectedCode?.section || ''
+    }));
+    
+    // Regenerate recommendations with new violation code
+    if (newDeficiency.description) {
+      generateRecommendations(newDeficiency.description, codeId);
+    }
   };
 
   const handleUpdateStatus = (deficiencyId, status) => {
