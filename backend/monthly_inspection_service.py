@@ -147,6 +147,14 @@ class MonthlyInspectionService:
             if not inspection:
                 raise ValueError("Inspection not found")
             
+            # Parse target completion date if provided
+            target_completion_date = deficiency_data.get("target_completion_date")
+            if target_completion_date and isinstance(target_completion_date, str):
+                try:
+                    target_completion_date = datetime.strptime(target_completion_date, "%Y-%m-%d").date()
+                except ValueError:
+                    target_completion_date = None
+            
             deficiency = InspectionDeficiency(
                 id=str(uuid.uuid4()),
                 inspection_id=inspection_id,
@@ -157,7 +165,7 @@ class MonthlyInspectionService:
                 citation_section=deficiency_data.get("citation_section"),
                 severity=deficiency_data.get("severity", "medium"),
                 corrective_action=deficiency_data.get("corrective_action"),
-                target_completion_date=deficiency_data.get("target_completion_date"),
+                target_completion_date=target_completion_date,
                 carryover_from_month=deficiency_data.get("carryover_from_month"),
                 violation_code_id=deficiency_data.get("violation_code_id")
             )
