@@ -124,28 +124,51 @@ const InspectionForm = ({ inspection, onClose, onSave }) => {
 
   const getFieldLabel = (field) => {
     const labels = {
-      sprinkler_system: 'Sprinkler System',
-      fire_alarms: 'Fire Alarms',
-      fire_extinguishers: 'Fire Extinguishers',
-      emergency_exits: 'Emergency Exits',
-      fire_doors: 'Fire Doors',
-      smoking_areas: 'Smoking Areas',
-      electrical_systems: 'Electrical Systems',
-      kitchen_equipment: 'Kitchen Equipment',
-      storage_areas: 'Storage Areas',
-      maintenance_areas: 'Maintenance Areas',
-      water_supply: 'Water Supply',
-      waste_management: 'Waste Management',
-      ventilation: 'Ventilation',
-      pest_control: 'Pest Control',
-      food_service: 'Food Service',
-      sanitation: 'Sanitation',
-      hazardous_materials: 'Hazardous Materials',
-      air_quality: 'Air Quality',
-      temperature_control: 'Temperature Control',
-      lighting: 'Lighting'
+      // Fire Safety Labels - Verbatim from Massachusetts DOC Form
+      fire_alarm_system_tested: 'Fire Alarm System Tested',
+      sprinkler_system_operational: 'Sprinkler System Operational',
+      fire_extinguishers_charged_accessible: 'Fire Extinguishers Charged & Accessible',
+      emergency_exits_unlocked_unobstructed: 'Emergency Exits Unlocked & Unobstructed',
+      exit_signs_illuminated: 'Exit Signs Illuminated',
+      emergency_lighting_functional: 'Emergency Lighting Functional',
+      fire_doors_properly_closed: 'Fire Doors Properly Closed',
+      smoke_dampers_operational: 'Smoke Dampers Operational',
+      fire_pump_operational: 'Fire Pump Operational',
+      standpipe_system_operational: 'Standpipe System Operational',
+      fire_department_connection_accessible: 'Fire Department Connection Accessible',
+      hot_work_permits_current: 'Hot Work Permits Current',
+      flammable_liquids_properly_stored: 'Flammable Liquids Properly Stored',
+      electrical_panels_accessible: 'Electrical Panels Accessible',
+      extension_cords_inspected: 'Extension Cords Inspected',
+      kitchen_hood_suppression_system: 'Kitchen Hood Suppression System',
+      smoking_policy_enforced: 'Smoking Policy Enforced',
+      fire_safety_training_current: 'Fire Safety Training Current',
+      fire_drill_conducted_monthly: 'Fire Drill Conducted Monthly',
+      fire_safety_equipment_inspected: 'Fire Safety Equipment Inspected',
+      
+      // Environmental Health Labels - Verbatim from Massachusetts DOC Form
+      potable_water_supply_adequate: 'Potable Water Supply Adequate',
+      water_temperature_appropriate: 'Water Temperature Appropriate',
+      sewage_system_functioning: 'Sewage System Functioning',
+      solid_waste_properly_disposed: 'Solid Waste Properly Disposed',
+      hazardous_waste_properly_stored: 'Hazardous Waste Properly Stored',
+      pest_control_program_effective: 'Pest Control Program Effective',
+      food_service_areas_sanitary: 'Food Service Areas Sanitary',
+      food_storage_temperature_controlled: 'Food Storage Temperature Controlled',
+      dishwashing_facilities_adequate: 'Dishwashing Facilities Adequate',
+      ventilation_systems_operational: 'Ventilation Systems Operational',
+      air_quality_acceptable: 'Air Quality Acceptable',
+      temperature_control_adequate: 'Temperature Control Adequate',
+      lighting_levels_adequate: 'Lighting Levels Adequate',
+      noise_levels_acceptable: 'Noise Levels Acceptable',
+      laundry_facilities_sanitary: 'Laundry Facilities Sanitary',
+      medical_waste_properly_handled: 'Medical Waste Properly Handled',
+      chemical_storage_compliant: 'Chemical Storage Compliant',
+      plumbing_fixtures_operational: 'Plumbing Fixtures Operational',
+      shower_facilities_adequate: 'Shower Facilities Adequate',
+      toilet_facilities_adequate: 'Toilet Facilities Adequate'
     };
-    return labels[field] || field;
+    return labels[field] || field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
   // Touch-friendly button component
