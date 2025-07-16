@@ -163,7 +163,7 @@ def create_monthly_inspection_router():
             logger.error(f"Error creating monthly inspection: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
 
-    @router.get("/monthly-inspections/{inspection_id}")
+    @router.get("/{inspection_id}")
     async def get_monthly_inspection(inspection_id: str, db: Session = Depends(get_db)):
         """Get monthly inspection by ID"""
         try:
