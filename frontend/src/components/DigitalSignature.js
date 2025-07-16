@@ -150,65 +150,65 @@ const DigitalSignature = ({ inspection, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-lg max-w-5xl w-full max-h-[95vh] overflow-y-auto">
         <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-blue-900">
+          <div className="flex justify-between items-center mb-8 pb-4 border-b-2 border-blue-200">
+            <h2 className="text-3xl font-bold text-blue-900">
               Digital Signatures
             </h2>
             <button
               onClick={onClose}
-              className="text-gray-500 hover:text-gray-700 text-2xl"
+              className="text-gray-500 hover:text-gray-700 text-4xl p-2 rounded-full hover:bg-gray-100 touch-manipulation"
             >
               ×
             </button>
           </div>
 
           {/* Signature Status */}
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Signature Status</h3>
-            <div className="space-y-3">
-              <div className={`p-4 rounded-lg border ${
+          <div className="mb-8">
+            <h3 className="text-2xl font-semibold text-gray-900 mb-6">Signature Status</h3>
+            <div className="space-y-4">
+              <div className={`p-6 rounded-lg border-2 ${
                 inspectorSignature.exists ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
               }`}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="font-medium">Inspector Signature</div>
+                    <div className="text-xl font-medium">Inspector Signature</div>
                     {inspectorSignature.exists ? (
-                      <div className="text-sm text-green-600">
+                      <div className="text-lg text-green-600">
                         ✅ Signed by {inspectorSignature.signed_by} on {new Date(inspectorSignature.signed_at).toLocaleDateString()}
                       </div>
                     ) : (
-                      <div className="text-sm text-gray-500">⏳ Pending signature</div>
+                      <div className="text-lg text-gray-500">⏳ Pending signature</div>
                     )}
                   </div>
                   {inspectorSignature.exists && (
-                    <div className="text-xs text-gray-400">
+                    <div className="text-sm text-gray-400">
                       Hash: {inspectorSignature.verification_hash?.substring(0, 8)}...
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className={`p-4 rounded-lg border ${
+              <div className={`p-6 rounded-lg border-2 ${
                 deputySignature.exists ? 'bg-green-50 border-green-200' : 
                 inspectorSignature.exists ? 'bg-yellow-50 border-yellow-200' : 'bg-gray-50 border-gray-200'
               }`}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="font-medium">Deputy of Operations Signature</div>
+                    <div className="text-xl font-medium">Deputy of Operations Signature</div>
                     {deputySignature.exists ? (
-                      <div className="text-sm text-green-600">
+                      <div className="text-lg text-green-600">
                         ✅ Signed by {deputySignature.signed_by} on {new Date(deputySignature.signed_at).toLocaleDateString()}
                       </div>
                     ) : inspectorSignature.exists ? (
-                      <div className="text-sm text-yellow-600">⏳ Awaiting deputy signature</div>
+                      <div className="text-lg text-yellow-600">⏳ Awaiting deputy signature</div>
                     ) : (
-                      <div className="text-sm text-gray-500">⏳ Waiting for inspector signature first</div>
+                      <div className="text-lg text-gray-500">⏳ Waiting for inspector signature first</div>
                     )}
                   </div>
                   {deputySignature.exists && (
-                    <div className="text-xs text-gray-400">
+                    <div className="text-sm text-gray-400">
                       Hash: {deputySignature.verification_hash?.substring(0, 8)}...
                     </div>
                   )}
@@ -219,18 +219,18 @@ const DigitalSignature = ({ inspection, onClose }) => {
 
           {/* Signature Canvas */}
           {(canSignAsInspector || canSignAsDeputy) && (
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Add Signature</h3>
+            <div className="mb-8">
+              <h3 className="text-2xl font-semibold text-gray-900 mb-6">Add Signature</h3>
               
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xl font-medium text-gray-700 mb-4">
                     Signature Type
                   </label>
                   <select
                     value={signatureType}
                     onChange={(e) => setSignatureType(e.target.value)}
-                    className="w-full md:w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 touch-manipulation"
                   >
                     {canSignAsInspector && (
                       <option value="inspector">Inspector (Fire Safety Officer / Environmental Health Safety Officer)</option>
@@ -242,7 +242,7 @@ const DigitalSignature = ({ inspection, onClose }) => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xl font-medium text-gray-700 mb-4">
                     Full Name
                   </label>
                   <input
@@ -250,42 +250,65 @@ const DigitalSignature = ({ inspection, onClose }) => {
                     value={signerName}
                     onChange={(e) => setSignerName(e.target.value)}
                     placeholder="Enter your full name"
-                    className="w-full md:w-1/2 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 touch-manipulation"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xl font-medium text-gray-700 mb-4">
                     Digital Signature
                   </label>
-                  <div className="border border-gray-300 rounded-md p-4 bg-gray-50">
+                  <div className="border-2 border-gray-300 rounded-lg p-4 bg-gray-50">
                     <canvas
                       ref={canvasRef}
-                      width={600}
-                      height={200}
-                      className="border border-gray-300 bg-white rounded cursor-crosshair"
+                      width={700}
+                      height={250}
+                      className="border-2 border-gray-300 bg-white rounded cursor-crosshair w-full touch-manipulation"
                       onMouseDown={startDrawing}
                       onMouseMove={draw}
                       onMouseUp={stopDrawing}
                       onMouseLeave={stopDrawing}
+                      onTouchStart={(e) => {
+                        e.preventDefault();
+                        const touch = e.touches[0];
+                        const mouseEvent = new MouseEvent('mousedown', {
+                          clientX: touch.clientX,
+                          clientY: touch.clientY
+                        });
+                        canvasRef.current.dispatchEvent(mouseEvent);
+                      }}
+                      onTouchMove={(e) => {
+                        e.preventDefault();
+                        const touch = e.touches[0];
+                        const mouseEvent = new MouseEvent('mousemove', {
+                          clientX: touch.clientX,
+                          clientY: touch.clientY
+                        });
+                        canvasRef.current.dispatchEvent(mouseEvent);
+                      }}
+                      onTouchEnd={(e) => {
+                        e.preventDefault();
+                        const mouseEvent = new MouseEvent('mouseup', {});
+                        canvasRef.current.dispatchEvent(mouseEvent);
+                      }}
                     />
-                    <div className="mt-2 text-sm text-gray-500">
-                      Click and drag to sign above
+                    <div className="mt-4 text-lg text-gray-600 text-center">
+                      Touch and drag to sign above
                     </div>
                   </div>
                 </div>
 
-                <div className="flex space-x-4">
+                <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
                   <button
                     onClick={clearCanvas}
-                    className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                    className="w-full sm:w-auto px-8 py-4 text-lg text-gray-600 border-2 border-gray-300 rounded-lg hover:bg-gray-50 touch-manipulation transition-colors"
                   >
-                    Clear
+                    Clear Signature
                   </button>
                   <button
                     onClick={saveSignature}
                     disabled={addSignatureMutation.isLoading || !hasSignature || !signerName.trim()}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                    className="w-full sm:w-auto px-8 py-4 text-lg bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 touch-manipulation transition-colors shadow-lg"
                   >
                     {addSignatureMutation.isLoading ? 'Saving...' : 'Save Signature'}
                   </button>
@@ -295,30 +318,30 @@ const DigitalSignature = ({ inspection, onClose }) => {
           )}
 
           {/* Workflow Information */}
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Signature Workflow</h3>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center space-x-2">
-                  <span className={inspectorSignature.exists ? 'text-green-600' : 'text-gray-400'}>
+          <div className="mb-8">
+            <h3 className="text-2xl font-semibold text-gray-900 mb-6">Signature Workflow</h3>
+            <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6">
+              <div className="space-y-4 text-lg">
+                <div className="flex items-center space-x-4">
+                  <span className={`text-2xl ${inspectorSignature.exists ? 'text-green-600' : 'text-gray-400'}`}>
                     {inspectorSignature.exists ? '✅' : '1️⃣'}
                   </span>
                   <span>Inspector (FSO/EHSO) completes and signs the inspection</span>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <span className={deputySignature.exists ? 'text-green-600' : inspectorSignature.exists ? 'text-yellow-600' : 'text-gray-400'}>
+                <div className="flex items-center space-x-4">
+                  <span className={`text-2xl ${deputySignature.exists ? 'text-green-600' : inspectorSignature.exists ? 'text-yellow-600' : 'text-gray-400'}`}>
                     {deputySignature.exists ? '✅' : inspectorSignature.exists ? '⏳' : '2️⃣'}
                   </span>
                   <span>Email notification sent to Deputy of Operations</span>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <span className={deputySignature.exists ? 'text-green-600' : 'text-gray-400'}>
+                <div className="flex items-center space-x-4">
+                  <span className={`text-2xl ${deputySignature.exists ? 'text-green-600' : 'text-gray-400'}`}>
                     {deputySignature.exists ? '✅' : '3️⃣'}
                   </span>
                   <span>Deputy of Operations reviews and signs</span>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <span className={deputySignature.exists ? 'text-green-600' : 'text-gray-400'}>
+                <div className="flex items-center space-x-4">
+                  <span className={`text-2xl ${deputySignature.exists ? 'text-green-600' : 'text-gray-400'}`}>
                     {deputySignature.exists ? '✅' : '4️⃣'}
                   </span>
                   <span>Form automatically populates to Compliance Tracking Tool</span>
@@ -331,7 +354,7 @@ const DigitalSignature = ({ inspection, onClose }) => {
           <div className="flex justify-end">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+              className="px-8 py-4 text-lg text-gray-600 border-2 border-gray-300 rounded-lg hover:bg-gray-50 touch-manipulation transition-colors"
             >
               Close
             </button>
