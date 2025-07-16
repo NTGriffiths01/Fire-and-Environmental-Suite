@@ -241,19 +241,41 @@ const DeficiencyManagement = ({ inspection, onClose }) => {
     }, 1000);
   };
 
-  // Handle violation code change
-  const handleViolationCodeChange = (codeId) => {
-    const selectedCode = violationCodes?.find(c => c.id === codeId);
-    setNewDeficiency(prev => ({ 
-      ...prev, 
-      violation_code_id: codeId,
-      citation_code: selectedCode?.code_number || '',
-      citation_section: selectedCode?.section || ''
-    }));
+  const handleAddDeficiency = () => {
+    if (!newDeficiency.area_type || !newDeficiency.description) {
+      toast.error('Please fill in required fields');
+      return;
+    }
     
-    // Regenerate recommendations with new violation code
-    if (newDeficiency.description) {
-      generateRecommendations(newDeficiency.description, codeId);
+    // Auto-generate incident report number
+    const incidentReportNumber = generateIncidentReportNumber();
+    
+    // Combine selected recommendations
+    const selectedRecommendations = recommendations.filter(rec => 
+      newDeficiency.recommendations.includes(rec)
+    ).join('; ');
+    
+    const deficiencyWithIncidentNumber = {
+      ...newDeficiency,
+      incident_report_number: incidentReportNumber,
+      recommendations: selectedRecommendations
+    };
+    
+    addDeficiencyMutation.mutate(deficiencyWithIncidentNumber);
+  };
+
+  const handleRecommendationSelect = (recommendation) => {
+    const currentRecommendations = newDeficiency.recommendations ? 
+      newDeficiency.recommendations.split('; ') : [];
+    
+    if (currentRecommendations.includes(recommendation)) {
+      // Remove recommendation
+      const updated = currentRecommendations.filter(r => r !== recommendation);
+      setNewDeficiency(prev => ({ ...prev, recommendations: updated.join('; ') }));
+    } else {
+      // Add recommendation
+      const updated = [...currentRecommendations, recommendation];
+      setNewDeficiency(prev => ({ ...prev, recommendations: updated.join('; ') }));
     }
   };
 
