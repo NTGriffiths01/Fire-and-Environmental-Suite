@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import axios from 'axios';
 import ComplianceDashboard from './components/ComplianceDashboard';
+import MonthlyInspectionDashboard from './components/MonthlyInspectionDashboard';
 import './App.css';
 
 // Create a React Query client
