@@ -142,7 +142,7 @@ def create_monthly_inspection_router():
 
     # **Monthly Inspection Endpoints**
 
-    @router.post("/monthly-inspections/create")
+    @router.post("/create")
     async def create_monthly_inspection(
         facility_id: str = Form(...),
         year: int = Form(...),
