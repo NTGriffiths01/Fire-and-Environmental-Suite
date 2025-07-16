@@ -263,7 +263,7 @@ const InspectionForm = ({ inspection, onClose, onSave }) => {
 
           {/* Form Header Information */}
           <div className="mb-8 bg-blue-50 rounded-lg p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
                 <label className="block text-lg font-medium text-gray-700 mb-3">
                   Inspection Date
@@ -272,6 +272,54 @@ const InspectionForm = ({ inspection, onClose, onSave }) => {
                   type="date"
                   value={formData.inspection_date || ''}
                   onChange={(e) => handleGeneralInputChange('inspection_date', e.target.value)}
+                  className="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 touch-manipulation"
+                />
+              </div>
+              <div>
+                <label className="block text-lg font-medium text-gray-700 mb-3">
+                  Inspector Name
+                </label>
+                <input
+                  type="text"
+                  value={formData.inspector_name || ''}
+                  onChange={(e) => handleGeneralInputChange('inspector_name', e.target.value)}
+                  placeholder="Enter inspector name"
+                  className="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 touch-manipulation"
+                />
+              </div>
+              <div>
+                <label className="block text-lg font-medium text-gray-700 mb-3">
+                  Inspector Title
+                </label>
+                <input
+                  type="text"
+                  value={formData.inspector_title || ''}
+                  onChange={(e) => handleGeneralInputChange('inspector_title', e.target.value)}
+                  placeholder="e.g., Fire Safety Officer"
+                  className="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 touch-manipulation"
+                />
+              </div>
+              <div>
+                <label className="block text-lg font-medium text-gray-700 mb-3">
+                  Facility Representative
+                </label>
+                <input
+                  type="text"
+                  value={formData.facility_representative || ''}
+                  onChange={(e) => handleGeneralInputChange('facility_representative', e.target.value)}
+                  placeholder="Enter facility representative name"
+                  className="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 touch-manipulation"
+                />
+              </div>
+              <div>
+                <label className="block text-lg font-medium text-gray-700 mb-3">
+                  Weather Conditions
+                </label>
+                <input
+                  type="text"
+                  value={formData.weather_conditions || ''}
+                  onChange={(e) => handleGeneralInputChange('weather_conditions', e.target.value)}
+                  placeholder="e.g., Clear, Rainy, Snowy"
                   className="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 touch-manipulation"
                 />
               </div>
@@ -287,6 +335,31 @@ const InspectionForm = ({ inspection, onClose, onSave }) => {
                 }`}>
                   {inspection.status.replace('_', ' ')}
                 </div>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+              <div>
+                <label className="block text-lg font-medium text-gray-700 mb-3">
+                  Inspection Start Time
+                </label>
+                <input
+                  type="time"
+                  value={formData.inspection_time_start || ''}
+                  onChange={(e) => handleGeneralInputChange('inspection_time_start', e.target.value)}
+                  className="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 touch-manipulation"
+                />
+              </div>
+              <div>
+                <label className="block text-lg font-medium text-gray-700 mb-3">
+                  Inspection End Time
+                </label>
+                <input
+                  type="time"
+                  value={formData.inspection_time_end || ''}
+                  onChange={(e) => handleGeneralInputChange('inspection_time_end', e.target.value)}
+                  className="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 touch-manipulation"
+                />
               </div>
             </div>
           </div>
