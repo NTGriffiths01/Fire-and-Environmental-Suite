@@ -288,49 +288,49 @@ const MonthlyInspectionDashboard = () => {
               <span className="ml-2 text-gray-600">Loading inspections...</span>
             </div>
           ) : selectedFacility ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => {
                 const inspection = inspections?.find(i => i.month === month);
                 
                 return (
                   <div
                     key={month}
-                    className={`border rounded-lg p-4 transition-all duration-200 ${
+                    className={`border-2 rounded-xl p-6 transition-all duration-200 min-h-[180px] touch-manipulation ${
                       inspection 
-                        ? 'bg-white border-blue-200 shadow-sm hover:shadow-md cursor-pointer'
-                        : 'bg-gray-50 border-gray-200 border-dashed'
+                        ? 'bg-white border-blue-200 shadow-lg hover:shadow-xl cursor-pointer transform hover:scale-105'
+                        : 'bg-gray-50 border-gray-300 border-dashed hover:border-gray-400'
                     }`}
                     onClick={() => inspection ? handleViewInspection(inspection) : handleCreateInspection(month)}
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold text-gray-900">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xl font-bold text-gray-900">
                         {getMonthName(month)}
                       </h3>
                       {inspection && (
-                        <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(inspection.status)}`}>
+                        <span className={`px-3 py-2 text-lg rounded-full font-medium ${getStatusColor(inspection.status)}`}>
                           {getStatusIcon(inspection.status)}
                         </span>
                       )}
                     </div>
                     
                     {inspection ? (
-                      <div className="space-y-2">
-                        <div className="text-sm text-gray-600">
-                          Status: <span className="font-medium">{inspection.status.replace('_', ' ')}</span>
+                      <div className="space-y-3">
+                        <div className="text-lg text-gray-700">
+                          <span className="font-medium">Status:</span> {inspection.status.replace('_', ' ')}
                         </div>
                         {inspection.inspection_date && (
-                          <div className="text-sm text-gray-600">
-                            Date: {new Date(inspection.inspection_date).toLocaleDateString()}
+                          <div className="text-lg text-gray-700">
+                            <span className="font-medium">Date:</span> {new Date(inspection.inspection_date).toLocaleDateString()}
                           </div>
                         )}
-                        <div className="text-sm text-gray-600">
-                          Created: {new Date(inspection.created_at).toLocaleDateString()}
+                        <div className="text-lg text-gray-700">
+                          <span className="font-medium">Created:</span> {new Date(inspection.created_at).toLocaleDateString()}
                         </div>
                       </div>
                     ) : (
-                      <div className="text-center py-4">
-                        <div className="text-2xl mb-2">➕</div>
-                        <div className="text-sm text-gray-500">Click to create inspection</div>
+                      <div className="text-center py-8">
+                        <div className="text-4xl mb-4">➕</div>
+                        <div className="text-lg font-medium text-gray-600">Tap to create inspection</div>
                       </div>
                     )}
                   </div>
